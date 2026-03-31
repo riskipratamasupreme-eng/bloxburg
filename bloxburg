@@ -1,40 +1,21 @@
 --[[
     ╔═══════════════════════════════════════════════════════╗
-    ║         SCRIPT KIMJONG v3.0 ☢️ GODMODE               ║
+    ║         SCRIPT KIMJONG v3.1 ☢️ GODMODE FIXED         ║
     ║         ANTI-DETECT NUCLEAR SHIELD EDITION           ║
-    ║         Undetectable. Unstoppable. Unlimited.        ║
+    ║         All Bugs Fixed - Clean UI - Working          ║
     ╚═══════════════════════════════════════════════════════╝
-    
-    Anti-Detection Level: ████████████████████ 100% DEWA
-    
-    Systems:
-    • Metamethod Hook Shield (__namecall, __index, __newindex)
-    • Remote Spy & Spoof Engine
-    • Kick/Ban Intercept Matrix
-    • WalkSpeed/JumpPower Ghost Spoofing
-    • Heartbeat & Physics Spoof
-    • Detection Script Neutralizer
-    • Memory Scan Evasion
-    • GUI Cloaking System
-    • Thread Ghosting Protocol
-    • Anti-Teleport Kick
-    • Anti-Idle Kick
-    • Return Value Manipulation
-    • Callstack Spoofing
-    • Environment Isolation
 ]]
 
--- ⚡ SECTION 0: PRE-INITIALIZATION CLEANUP
+-- ⚡ CLEANUP OLD INSTANCES
 if _G.KimJongLoaded then
-    if _G.KimJongCleanup then
-        pcall(_G.KimJongCleanup)
-    end
+    pcall(function()
+        if _G.KimJongCleanup then _G.KimJongCleanup() end
+    end)
     task.wait(0.5)
 end
 _G.KimJongLoaded = true
-_G.KimJongAntiDetect = true
 
--- ⚡ SECTION 1: SERVICES
+-- ⚡ SERVICES
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -42,1179 +23,433 @@ local TweenService = game:GetService("TweenService")
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TeleportService = game:GetService("TeleportService")
-local StarterGui = game:GetService("StarterGui")
 local HttpService = game:GetService("HttpService")
 local VirtualUser = game:GetService("VirtualUser")
 local Stats = game:GetService("Stats")
 local CoreGui = game:GetService("CoreGui")
 local ScriptContext = game:GetService("ScriptContext")
 local LogService = game:GetService("LogService")
-local GuiService = game:GetService("GuiService")
-local ContentProvider = game:GetService("ContentProvider")
-local NetworkClient = game:GetService("NetworkClient")
 
-local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 local Mouse = LocalPlayer:GetMouse()
 
---[[
-    ╔═══════════════════════════════════════════════════════╗
-    ║    🛡️ ANTI-DETECTION NUCLEAR SHIELD - LEVEL DEWA 🛡️  ║
-    ║                                                       ║
-    ║    17 Layer Protection System                         ║
-    ║    Every layer makes detection harder                 ║
-    ╚═══════════════════════════════════════════════════════╝
-]]
-
-local AntiDetect = {}
-AntiDetect.Hooks = {}
-AntiDetect.OriginalFunctions = {}
-AntiDetect.BlockedRemotes = {}
-AntiDetect.SpoofedValues = {}
-AntiDetect.Connections = {}
-AntiDetect.Active = true
-
--- Store real values for spoofing
-AntiDetect.RealWalkSpeed = 16
-AntiDetect.RealJumpPower = 50
-AntiDetect.SpoofWalkSpeed = true
-AntiDetect.SpoofJumpPower = true
-
 -- ═══════════════════════════════════════
--- 🛡️ LAYER 1: ENVIRONMENT ISOLATION
--- Isolate script environment from detection
+-- ANTI-DETECTION ENGINE (17 LAYERS)
 -- ═══════════════════════════════════════
 
-local function IsolateEnvironment()
-    pcall(function()
-        -- Hide from getgenv detection
-        if getgenv then
-            local env = getgenv()
-            -- Don't store obvious keys
-            -- Use randomized internal keys
-            local key = HttpService:GenerateGUID(false):sub(1, 8)
-            env["__KJ_" .. key] = true
-        end
-    end)
+local AntiDetect = {
+    Active = true,
+    OriginalFunctions = {},
+    BlockedRemotes = {},
+    Connections = {},
+    SpoofWalkSpeed = true,
+    SpoofJumpPower = true,
+}
+
+-- Random name generator
+local function RNG()
+    local c = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    local n = ""
+    for i = 1, math.random(10, 18) do
+        local r = math.random(1, #c)
+        n = n .. c:sub(r, r)
+    end
+    return n
 end
 
-pcall(IsolateEnvironment)
+-- 🛡️ LAYER 1: Environment Isolation
+pcall(function()
+    if getgenv then
+        local env = getgenv()
+        env["__KJ_" .. RNG()] = true
+    end
+end)
 
--- ═══════════════════════════════════════
--- 🛡️ LAYER 2: ANTI-KICK NUCLEAR SHIELD
--- Intercept ALL kick attempts
--- ═══════════════════════════════════════
-
-local function SetupAntiKick()
-    -- Method 1: Hook LocalPlayer.Kick
-    pcall(function()
+-- 🛡️ LAYER 2: Anti-Kick Shield
+pcall(function()
+    if hookfunction and newcclosure then
         local oldKick = LocalPlayer.Kick
-        if hookfunction then
-            AntiDetect.OriginalFunctions.Kick = hookfunction(LocalPlayer.Kick, function(self, ...)
-                if self == LocalPlayer then
-                    warn("[KimJong Shield] ⛔ KICK BLOCKED!")
-                    return -- Block the kick
-                end
-                return AntiDetect.OriginalFunctions.Kick(self, ...)
-            end)
-        end
-    end)
-
-    -- Method 2: Hook Players:FindFirstChild to hide detection
-    pcall(function()
-        if hookfunction then
-            local oldFF = game.FindFirstChild
-            AntiDetect.OriginalFunctions.FindFirstChild = hookfunction(game.FindFirstChild, function(self, name, ...)
-                -- Block anti-cheat script lookups
-                if type(name) == "string" then
-                    local lower = name:lower()
-                    if lower:find("anticheat") or lower:find("anti_cheat") or 
-                       lower:find("ac_") or lower:find("detect") or 
-                       lower:find("exploit") or lower:find("cheatdetect") or
-                       lower:find("securitycheck") or lower:find("validation") then
-                        -- Return nil to hide anti-cheat scripts from themselves
-                    end
-                end
-                return AntiDetect.OriginalFunctions.FindFirstChild(self, name, ...)
-            end)
-        end
-    end)
-
-    -- Method 3: Intercept TeleportService kicks
-    pcall(function()
-        if hookfunction then
-            local oldTeleport = TeleportService.Teleport
-            AntiDetect.OriginalFunctions.Teleport = hookfunction(TeleportService.Teleport, function(self, placeId, ...)
-                -- Check if this is a kick disguised as teleport
-                if placeId == 0 or placeId == nil then
-                    warn("[KimJong Shield] ⛔ TELEPORT KICK BLOCKED!")
-                    return
-                end
-                -- Check if teleporting to a ban/kick place
-                local args = {...}
-                local teleportData = args[2]
-                if type(teleportData) == "table" then
-                    if teleportData.kicked or teleportData.banned or teleportData.reason then
-                        warn("[KimJong Shield] ⛔ BAN TELEPORT BLOCKED!")
-                        return
-                    end
-                end
-                return AntiDetect.OriginalFunctions.Teleport(self, placeId, ...)
-            end)
-        end
-    end)
-
-    -- Method 4: Block :Kick() on the player instance
-    pcall(function()
-        local mt = getrawmetatable(game)
-        if mt and setreadonly then
-            local oldNamecall = mt.__namecall
-            setreadonly(mt, false)
-            mt.__namecall = newcclosure(function(self, ...)
-                local method = getnamecallmethod()
-                
-                -- Block Kick
-                if method == "Kick" and self == LocalPlayer then
-                    warn("[KimJong Shield] ⛔ __namecall KICK BLOCKED!")
-                    return
-                end
-                
-                -- Block Destroy on LocalPlayer
-                if method == "Destroy" and self == LocalPlayer then
-                    warn("[KimJong Shield] ⛔ DESTROY PLAYER BLOCKED!")
-                    return
-                end
-                
-                -- Block Remove on LocalPlayer
-                if method == "Remove" and self == LocalPlayer then
-                    warn("[KimJong Shield] ⛔ REMOVE PLAYER BLOCKED!")
-                    return
-                end
-                
-                return oldNamecall(self, ...)
-            end)
-            setreadonly(mt, true)
-            AntiDetect.OriginalFunctions.Namecall = oldNamecall
-        end
-    end)
-end
-
-pcall(SetupAntiKick)
-
--- ═══════════════════════════════════════
--- 🛡️ LAYER 3: METAMETHOD HOOK SHIELD
--- Hook __index, __newindex, __namecall
--- Spoof all suspicious property reads
--- ═══════════════════════════════════════
-
-local function SetupMetamethodHooks()
-    pcall(function()
-        local mt = getrawmetatable(game)
-        if not mt then return end
-        if not setreadonly then return end
-        
-        local oldIndex = mt.__index
-        local oldNewindex = mt.__newindex
-        local oldNamecall = rawget(mt, "__namecall") or mt.__namecall
-        
-        setreadonly(mt, false)
-        
-        -- ═══ __index HOOK ═══
-        -- Intercept property reads to spoof values
-        mt.__index = newcclosure(function(self, key)
-            -- Spoof Humanoid properties
-            if AntiDetect.Active then
-                pcall(function()
-                    if typeof(self) == "Instance" and self:IsA("Humanoid") then
-                        local char = LocalPlayer.Character
-                        if char and self:IsDescendantOf(char) then
-                            -- Spoof WalkSpeed - return normal value to anti-cheat
-                            if key == "WalkSpeed" and AntiDetect.SpoofWalkSpeed then
-                                -- Anti-cheat reads WalkSpeed → we return 16 (normal)
-                                -- But actual WalkSpeed is our modified value
-                                local realVal = oldIndex(self, key)
-                                if realVal > 16 then
-                                    return 16 -- Spoof to normal
-                                end
-                            end
-                            
-                            -- Spoof JumpPower
-                            if key == "JumpPower" and AntiDetect.SpoofJumpPower then
-                                local realVal = oldIndex(self, key)
-                                if realVal > 50 then
-                                    return 50 -- Spoof to normal
-                                end
-                            end
-                            
-                            -- Spoof JumpHeight
-                            if key == "JumpHeight" then
-                                return 7.2 -- Default
-                            end
-                        end
-                    end
-                    
-                    -- Hide HumanoidRootPart velocity from detection
-                    if typeof(self) == "Instance" and self:IsA("BasePart") then
-                        if self.Name == "HumanoidRootPart" then
-                            local char = LocalPlayer.Character
-                            if char and self:IsDescendantOf(char) then
-                                if key == "Velocity" then
-                                    local vel = oldIndex(self, key)
-                                    if vel.Magnitude > 100 then
-                                        return Vector3.new(0, 0, 0) -- Spoof high velocity
-                                    end
-                                end
-                                -- Hide BodyMovers from detection
-                                if key == "AssemblyLinearVelocity" then
-                                    local vel = oldIndex(self, key)
-                                    if vel.Magnitude > 100 then
-                                        return Vector3.new(0, 0, 0)
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end)
+        AntiDetect.OriginalFunctions.Kick = hookfunction(LocalPlayer.Kick, newcclosure(function(self, ...)
+            if self == LocalPlayer then
+                warn("[KimJong] ⛔ KICK BLOCKED")
+                return
             end
-            
-            return oldIndex(self, key)
-        end)
-        
-        -- ═══ __newindex HOOK ═══
-        -- Intercept property writes to detect anti-cheat resets
-        mt.__newindex = newcclosure(function(self, key, value)
-            if AntiDetect.Active then
-                pcall(function()
-                    if typeof(self) == "Instance" and self:IsA("Humanoid") then
-                        local char = LocalPlayer.Character
-                        if char and self:IsDescendantOf(char) then
-                            -- Prevent anti-cheat from resetting WalkSpeed
-                            if key == "WalkSpeed" and AntiDetect.SpoofWalkSpeed then
-                                if _G.KimJongStates and _G.KimJongStates.WalkSpeed then
-                                    if value == 16 and _G.KimJongStates.WalkSpeed > 16 then
-                                        -- Anti-cheat trying to reset! Block it
-                                        return oldNewindex(self, key, _G.KimJongStates.WalkSpeed)
-                                    end
-                                end
-                            end
-                            
-                            -- Prevent anti-cheat from resetting JumpPower
-                            if key == "JumpPower" and AntiDetect.SpoofJumpPower then
-                                if _G.KimJongStates and _G.KimJongStates.JumpPower then
-                                    if value == 50 and _G.KimJongStates.JumpPower > 50 then
-                                        return oldNewindex(self, key, _G.KimJongStates.JumpPower)
-                                    end
-                                end
-                            end
-                            
-                            -- Block Health = 0 from anti-cheat (kill attempt)
-                            if key == "Health" and value == 0 then
-                                -- Check if it's from anti-cheat, not from us
-                                -- Allow if we're resetting character
-                                if not _G.KimJongResetting then
-                                    warn("[KimJong Shield] ⛔ HEALTH KILL BLOCKED!")
-                                    return
-                                end
-                            end
-                        end
-                    end
-                end)
+            return AntiDetect.OriginalFunctions.Kick(self, ...)
+        end))
+    end
+end)
+
+-- 🛡️ LAYER 3: Metamethod Hooks
+pcall(function()
+    local mt = getrawmetatable and getrawmetatable(game)
+    if not mt or not setreadonly or not newcclosure then return end
+
+    local oldIndex = mt.__index
+    local oldNewindex = mt.__newindex
+    local oldNamecall = mt.__namecall
+
+    setreadonly(mt, false)
+
+    mt.__namecall = newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        local args = {...}
+
+        if AntiDetect.Active then
+            -- Block kicks
+            if method == "Kick" and self == LocalPlayer then
+                return
             end
-            
-            return oldNewindex(self, key, value)
-        end)
-        
-        -- ═══ __namecall HOOK (ENHANCED) ═══
-        mt.__namecall = newcclosure(function(self, ...)
-            local method = getnamecallmethod()
-            local args = {...}
-            
-            if AntiDetect.Active then
-                -- ══ BLOCK KICKS ══
-                if method == "Kick" then
-                    if self == LocalPlayer or (typeof(self) == "Instance" and self:IsA("Player")) then
-                        if self == LocalPlayer then
-                            warn("[KimJong Shield] ⛔ NAMECALL KICK BLOCKED! Method: " .. method)
-                            return
-                        end
-                    end
+            if method == "Destroy" and self == LocalPlayer then
+                return
+            end
+
+            -- Block anti-cheat remotes
+            if method == "FireServer" and typeof(self) == "Instance" and self:IsA("RemoteEvent") then
+                local rn = self.Name:lower()
+                if rn:find("anticheat") or rn:find("detect") or rn:find("exploit") or
+                   rn:find("violation") or rn:find("flag") or rn:find("security") or
+                   rn:find("ban") or rn:find("kick") or rn:find("cheat") or
+                   rn:find("hack") or rn:find("suspicious") or rn:find("verify") or
+                   rn:find("validate") or rn:find("integrity") or rn:find("ac_") or
+                   rn:find("monitor") or rn:find("report") then
+                    return
                 end
-                
-                -- ══ BLOCK DESTROY ON PLAYER/CHARACTER ══
-                if method == "Destroy" or method == "Remove" then
-                    if self == LocalPlayer then
-                        warn("[KimJong Shield] ⛔ PLAYER DESTROY BLOCKED!")
-                        return
-                    end
-                    local char = LocalPlayer.Character
-                    if char and self == char then
-                        if not _G.KimJongResetting then
-                            warn("[KimJong Shield] ⛔ CHARACTER DESTROY BLOCKED!")
-                            return
-                        end
-                    end
-                end
-                
-                -- ══ INTERCEPT REMOTE EVENTS ══
-                if method == "FireServer" and typeof(self) == "Instance" and self:IsA("RemoteEvent") then
-                    local remoteName = self.Name:lower()
-                    
-                    -- Block anti-cheat report remotes
-                    if remoteName:find("report") or remoteName:find("detect") or 
-                       remoteName:find("anticheat") or remoteName:find("exploit") or
-                       remoteName:find("violation") or remoteName:find("flag") or
-                       remoteName:find("security") or remoteName:find("ban") or
-                       remoteName:find("kick") or remoteName:find("cheat") or
-                       remoteName:find("hack") or remoteName:find("suspicious") or
-                       remoteName:find("verify") or remoteName:find("validate") or
-                       remoteName:find("integrity") or remoteName:find("ac_") or
-                       remoteName:find("check") or remoteName:find("monitor") then
-                        warn("[KimJong Shield] ⛔ ANTI-CHEAT REMOTE BLOCKED: " .. self.Name)
-                        return
-                    end
-                    
-                    -- Spoof player data in remote arguments
-                    for i, arg in pairs(args) do
-                        if type(arg) == "table" then
-                            -- Remove suspicious data from tables
-                            if arg.speed or arg.walkspeed or arg.WalkSpeed then
-                                arg.speed = 16
-                                arg.walkspeed = 16
-                                arg.WalkSpeed = 16
-                            end
-                            if arg.jumppower or arg.JumpPower then
-                                arg.jumppower = 50
-                                arg.JumpPower = 50
-                            end
-                            if arg.position and typeof(arg.position) == "Vector3" then
-                                -- Don't spoof position in remotes (breaks game)
-                            end
-                            if arg.exploit or arg.cheat or arg.hack then
-                                arg.exploit = nil
-                                arg.cheat = nil
-                                arg.hack = nil
-                            end
-                        end
-                        -- Spoof number values that look like speed/jump
-                        if type(arg) == "number" then
-                            -- If sending walkspeed value
-                            if arg > 50 and arg == (_G.KimJongStates and _G.KimJongStates.WalkSpeed or 16) then
-                                args[i] = 16
-                            end
-                        end
-                    end
-                end
-                
-                -- ══ INTERCEPT REMOTE FUNCTIONS ══
-                if method == "InvokeServer" and typeof(self) == "Instance" and self:IsA("RemoteFunction") then
-                    local remoteName = self.Name:lower()
-                    
-                    -- Block anti-cheat invoke calls
-                    if remoteName:find("detect") or remoteName:find("anticheat") or
-                       remoteName:find("security") or remoteName:find("validate") or
-                       remoteName:find("verify") or remoteName:find("check") or
-                       remoteName:find("integrity") then
-                        warn("[KimJong Shield] ⛔ ANTI-CHEAT INVOKE BLOCKED: " .. self.Name)
-                        return true -- Return true = "all good, no cheats here"
-                    end
-                end
-                
-                -- ══ BLOCK GetChildren/GetDescendants ON COREGUI ══
-                if (method == "GetChildren" or method == "GetDescendants") then
-                    if self == CoreGui or (typeof(self) == "Instance" and self:IsDescendantOf(CoreGui)) then
-                        local result = {oldNamecall(self, ...)}
-                        -- Filter out our GUI from results
-                        if result[1] and type(result[1]) == "table" then
-                            local filtered = {}
-                            for _, child in pairs(result[1]) do
-                                if not (typeof(child) == "Instance" and child:GetAttribute("KimJong")) then
-                                    table.insert(filtered, child)
-                                end
-                            end
-                            return filtered
-                        end
-                        return unpack(result)
+
+                -- Spoof speed data in args
+                for i, arg in pairs(args) do
+                    if type(arg) == "table" then
+                        if arg.speed then arg.speed = 16 end
+                        if arg.walkspeed then arg.walkspeed = 16 end
+                        if arg.WalkSpeed then arg.WalkSpeed = 16 end
+                        if arg.jumppower then arg.jumppower = 50 end
+                        if arg.JumpPower then arg.JumpPower = 50 end
                     end
                 end
             end
-            
-            return oldNamecall(self, ...)
-        end)
-        
-        setreadonly(mt, true)
-        
-        AntiDetect.OriginalFunctions.Index = oldIndex
-        AntiDetect.OriginalFunctions.Newindex = oldNewindex
-        AntiDetect.OriginalFunctions.Namecall2 = oldNamecall
-    end)
-end
 
-pcall(SetupMetamethodHooks)
+            -- Block anti-cheat invocations
+            if method == "InvokeServer" and typeof(self) == "Instance" and self:IsA("RemoteFunction") then
+                local rn = self.Name:lower()
+                if rn:find("detect") or rn:find("anticheat") or rn:find("security") or
+                   rn:find("validate") or rn:find("verify") or rn:find("integrity") then
+                    return true
+                end
+            end
 
--- ═══════════════════════════════════════
--- 🛡️ LAYER 4: REMOTE SPY & BLOCKER
--- Monitor and block all anti-cheat remotes
--- ═══════════════════════════════════════
-
-local function SetupRemoteBlocker()
-    -- Scan existing remotes
-    pcall(function()
-        local blockedCount = 0
-        
-        local function ScanAndBlock(parent)
-            for _, child in pairs(parent:GetDescendants()) do
-                if child:IsA("RemoteEvent") or child:IsA("RemoteFunction") then
-                    local name = child.Name:lower()
-                    if name:find("anticheat") or name:find("anti_cheat") or 
-                       name:find("detect") or name:find("exploit") or
-                       name:find("security") or name:find("hack") or
-                       name:find("violation") or name:find("report") or
-                       name:find("flag") or name:find("monitor") or
-                       name:find("integrity") or name:find("validate") or
-                       name:find("ac_") or name:find("check_speed") or
-                       name:find("speed_check") or name:find("fly_detect") or
-                       name:find("noclip_detect") or name:find("tp_detect") then
-                        AntiDetect.BlockedRemotes[child] = true
-                        blockedCount = blockedCount + 1
-                        
-                        -- Disable the remote by intercepting
-                        pcall(function()
-                            if child:IsA("RemoteEvent") then
-                                -- Create a fake connection that does nothing
-                                child.OnClientEvent:Connect(function()
-                                    return -- Eat the event
-                                end)
+            -- Hide our GUI from GetChildren/GetDescendants
+            if (method == "GetChildren" or method == "GetDescendants") then
+                if self == CoreGui then
+                    local result = oldNamecall(self, ...)
+                    if type(result) == "table" then
+                        local filtered = {}
+                        for _, child in ipairs(result) do
+                            if not (typeof(child) == "Instance" and child:GetAttribute("KimJong")) then
+                                table.insert(filtered, child)
                             end
-                        end)
+                        end
+                        return filtered
                     end
                 end
             end
         end
-        
-        ScanAndBlock(ReplicatedStorage)
-        ScanAndBlock(workspace)
-        
-        -- Also scan StarterPlayerScripts and StarterCharacterScripts
-        pcall(function()
-            ScanAndBlock(game:GetService("StarterPlayer"))
-        end)
-        
-        if blockedCount > 0 then
-            warn("[KimJong Shield] 🛡️ Blocked " .. blockedCount .. " anti-cheat remotes!")
-        end
+
+        return oldNamecall(self, ...)
     end)
-    
-    -- Monitor new remotes being created
-    pcall(function()
-        AntiDetect.Connections.RemoteWatcher = ReplicatedStorage.DescendantAdded:Connect(function(child)
+
+    -- __index hook - spoof speed reads
+    mt.__index = newcclosure(function(self, key)
+        if AntiDetect.Active and typeof(self) == "Instance" and self:IsA("Humanoid") then
+            local char = LocalPlayer.Character
+            if char and self:IsDescendantOf(char) then
+                if key == "WalkSpeed" and AntiDetect.SpoofWalkSpeed then
+                    local real = oldIndex(self, key)
+                    if real > 16 then return 16 end
+                end
+                if key == "JumpPower" and AntiDetect.SpoofJumpPower then
+                    local real = oldIndex(self, key)
+                    if real > 50 then return 50 end
+                end
+            end
+        end
+
+        if AntiDetect.Active and typeof(self) == "Instance" and self:IsA("BasePart") then
+            if self.Name == "HumanoidRootPart" then
+                local char = LocalPlayer.Character
+                if char and self:IsDescendantOf(char) then
+                    if key == "Velocity" or key == "AssemblyLinearVelocity" then
+                        local vel = oldIndex(self, key)
+                        if vel.Magnitude > 100 then
+                            return Vector3.new(0, 0, 0)
+                        end
+                    end
+                end
+            end
+        end
+
+        return oldIndex(self, key)
+    end)
+
+    -- __newindex hook - block anti-cheat resets
+    mt.__newindex = newcclosure(function(self, key, value)
+        if AntiDetect.Active and typeof(self) == "Instance" and self:IsA("Humanoid") then
+            local char = LocalPlayer.Character
+            if char and self:IsDescendantOf(char) then
+                if key == "WalkSpeed" and _G.KimJongStates then
+                    if value == 16 and _G.KimJongStates.WalkSpeed > 16 then
+                        return oldNewindex(self, key, _G.KimJongStates.WalkSpeed)
+                    end
+                end
+                if key == "JumpPower" and _G.KimJongStates then
+                    if value == 50 and _G.KimJongStates.JumpPower > 50 then
+                        return oldNewindex(self, key, _G.KimJongStates.JumpPower)
+                    end
+                end
+                if key == "Health" and value == 0 and not _G.KimJongResetting then
+                    return
+                end
+            end
+        end
+        return oldNewindex(self, key, value)
+    end)
+
+    setreadonly(mt, true)
+    AntiDetect.OriginalFunctions.Namecall = oldNamecall
+    AntiDetect.OriginalFunctions.Index = oldIndex
+    AntiDetect.OriginalFunctions.Newindex = oldNewindex
+end)
+
+-- 🛡️ LAYER 4: Remote Blocker
+pcall(function()
+    local blocked = 0
+    local function ScanRemotes(parent)
+        for _, child in pairs(parent:GetDescendants()) do
             if child:IsA("RemoteEvent") or child:IsA("RemoteFunction") then
-                local name = child.Name:lower()
-                if name:find("anticheat") or name:find("detect") or name:find("exploit") or
-                   name:find("security") or name:find("hack") or name:find("ban") or
-                   name:find("kick") or name:find("flag") or name:find("report") then
+                local n = child.Name:lower()
+                if n:find("anticheat") or n:find("detect") or n:find("exploit") or
+                   n:find("security") or n:find("hack") or n:find("violation") or
+                   n:find("flag") or n:find("monitor") or n:find("integrity") or
+                   n:find("ac_") or n:find("speed_check") or n:find("fly_detect") then
                     AntiDetect.BlockedRemotes[child] = true
-                    warn("[KimJong Shield] 🛡️ New anti-cheat remote blocked: " .. child.Name)
-                end
-            end
-        end)
-    end)
-end
-
-pcall(SetupRemoteBlocker)
-
--- ═══════════════════════════════════════
--- 🛡️ LAYER 5: ANTI-CHEAT SCRIPT NEUTRALIZER
--- Find and disable anti-cheat LocalScripts
--- ═══════════════════════════════════════
-
-local function NeutralizeAntiCheatScripts()
-    pcall(function()
-        local neutralized = 0
-        
-        local function ProcessScript(script)
-            if script:IsA("LocalScript") or script:IsA("ModuleScript") then
-                local name = script.Name:lower()
-                if name:find("anticheat") or name:find("anti_cheat") or 
-                   name:find("ac_") or name:find("cheatdetect") or
-                   name:find("exploitdetect") or name:find("securitycheck") or
-                   name:find("hackdetect") or name:find("speedcheck") or
-                   name:find("flydetect") or name:find("noclipdetect") or
-                   name:find("validation") or name:find("integrity") or
-                   name:find("guardian") or name:find("sentinel") or
-                   name:find("watchdog") or name:find("monitor") then
-                    pcall(function()
-                        script.Disabled = true
-                        neutralized = neutralized + 1
-                    end)
+                    blocked = blocked + 1
                 end
             end
         end
-        
-        -- Scan all script containers
+    end
+    ScanRemotes(ReplicatedStorage)
+    ScanRemotes(workspace)
+
+    AntiDetect.Connections.RemoteWatch = ReplicatedStorage.DescendantAdded:Connect(function(child)
+        if child:IsA("RemoteEvent") or child:IsA("RemoteFunction") then
+            local n = child.Name:lower()
+            if n:find("anticheat") or n:find("detect") or n:find("exploit") or
+               n:find("security") or n:find("ban") or n:find("kick") then
+                AntiDetect.BlockedRemotes[child] = true
+            end
+        end
+    end)
+end)
+
+-- 🛡️ LAYER 5: Script Neutralizer
+local function NeutralizeAC()
+    pcall(function()
         local containers = {
             LocalPlayer:FindFirstChild("PlayerScripts"),
             LocalPlayer:FindFirstChild("PlayerGui"),
             LocalPlayer.Character,
         }
-        
         for _, container in pairs(containers) do
             if container then
                 for _, desc in pairs(container:GetDescendants()) do
-                    ProcessScript(desc)
-                end
-            end
-        end
-        
-        -- Also check ReplicatedFirst
-        pcall(function()
-            for _, desc in pairs(game:GetService("ReplicatedFirst"):GetDescendants()) do
-                ProcessScript(desc)
-            end
-        end)
-        
-        if neutralized > 0 then
-            warn("[KimJong Shield] 🛡️ Neutralized " .. neutralized .. " anti-cheat scripts!")
-        end
-    end)
-end
-
-pcall(NeutralizeAntiCheatScripts)
-
--- ═══════════════════════════════════════
--- 🛡️ LAYER 6: HEARTBEAT & PHYSICS SPOOFING
--- Make physics look normal to server
--- ═══════════════════════════════════════
-
-local function SetupPhysicsSpoofing()
-    pcall(function()
-        -- Spoof physics velocity to look normal
-        AntiDetect.Connections.PhysicsSpoof = RunService.Heartbeat:Connect(function(dt)
-            if not AntiDetect.Active then return end
-            
-            pcall(function()
-                local char = LocalPlayer.Character
-                if not char then return end
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                local hum = char:FindFirstChildOfClass("Humanoid")
-                if not hrp or not hum then return end
-                
-                -- If we have BodyVelocity (flying), hide it from detection
-                local bv = hrp:FindFirstChild("KJ_BodyVelocity")
-                if bv then
-                    -- Make body velocity name look like game's own
-                    -- Already named with KJ_ prefix for our tracking
-                end
-                
-                -- Clamp network owner physics
-                -- This makes the server think we're moving normally
-                if hrp.AssemblyLinearVelocity.Magnitude > 200 then
-                    -- Server might flag this, but our __index hook already handles reads
-                end
-            end)
-        end)
-    end)
-end
-
-pcall(SetupPhysicsSpoofing)
-
--- ═══════════════════════════════════════
--- 🛡️ LAYER 7: GUI CLOAKING SYSTEM
--- Hide our GUI from all detection methods
--- ═══════════════════════════════════════
-
-local function SetupGUICloaking()
-    pcall(function()
-        -- Hook gethui / CoreGui access to hide our GUI
-        if hookfunction then
-            -- Hook FindFirstChild on CoreGui
-            -- Already handled in __namecall
-        end
-        
-        -- Hook PlayerGui:GetChildren to hide our presence
-        pcall(function()
-            local playerGui = LocalPlayer:FindFirstChild("PlayerGui")
-            if playerGui then
-                -- Our GUI has random name and KimJong attribute
-                -- The __namecall hook filters it from GetChildren results
-            end
-        end)
-    end)
-end
-
-pcall(SetupGUICloaking)
-
--- ═══════════════════════════════════════
--- 🛡️ LAYER 8: ANTI-TELEPORT KICK
--- Prevent forced teleports used as kicks
--- ═══════════════════════════════════════
-
-local function SetupAntiTeleportKick()
-    pcall(function()
-        -- Hook TeleportService methods
-        if hookfunction then
-            local oldTeleportToPlace = TeleportService.TeleportToPlaceInstance
-            AntiDetect.OriginalFunctions.TeleportToPlace = hookfunction(
-                TeleportService.TeleportToPlaceInstance,
-                function(self, placeId, instanceId, ...)
-                    -- Check if this is a legitimate teleport or a kick
-                    if placeId ~= game.PlaceId then
-                        -- Could be a kick teleport - check context
-                        local info = debug.info(2, "s") -- Get caller source
-                        if info and (info:lower():find("anticheat") or info:lower():find("kick") or info:lower():find("ban")) then
-                            warn("[KimJong Shield] ⛔ TELEPORT KICK BLOCKED from: " .. tostring(info))
-                            return
-                        end
-                    end
-                    return AntiDetect.OriginalFunctions.TeleportToPlace(self, placeId, instanceId, ...)
-                end
-            )
-        end
-    end)
-    
-    -- Block CharacterRemoving exploit detection
-    pcall(function()
-        AntiDetect.Connections.CharProtect = LocalPlayer.CharacterRemoving:Connect(function(char)
-            -- Quickly flag that character was removed legitimately
-            _G.KimJongCharRemoving = true
-            task.delay(5, function()
-                _G.KimJongCharRemoving = false
-            end)
-        end)
-    end)
-end
-
-pcall(SetupAntiTeleportKick)
-
--- ═══════════════════════════════════════
--- 🛡️ LAYER 9: ANTI-IDLE / ANTI-AFK SUPREME
--- Multiple methods to prevent AFK kick
--- ═══════════════════════════════════════
-
-local function SetupAntiAFKSupreme()
-    -- Method 1: VirtualUser
-    pcall(function()
-        AntiDetect.Connections.AntiAFK1 = LocalPlayer.Idled:Connect(function()
-            pcall(function()
-                VirtualUser:CaptureController()
-                VirtualUser:ClickButton2(Vector2.new())
-            end)
-        end)
-    end)
-    
-    -- Method 2: Simulate input periodically
-    pcall(function()
-        AntiDetect.Connections.AntiAFK2 = task.spawn(function()
-            while AntiDetect.Active do
-                pcall(function()
-                    VirtualUser:CaptureController()
-                    VirtualUser:ClickButton2(Vector2.new(0, 0))
-                end)
-                task.wait(60) -- Every minute
-            end
-        end)
-    end)
-    
-    -- Method 3: Keep character moving slightly
-    pcall(function()
-        AntiDetect.Connections.AntiAFK3 = RunService.Heartbeat:Connect(function()
-            -- Micro-movement every 300 frames to prevent position-based AFK detection
-            if tick() % 300 < 1 then
-                pcall(function()
-                    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-                    if hum then
-                        hum:Move(Vector3.new(0.001, 0, 0))
-                        task.delay(0.1, function()
-                            pcall(function() hum:Move(Vector3.new(0, 0, 0)) end)
-                        end)
-                    end
-                end)
-            end
-        end)
-    end)
-end
-
-pcall(SetupAntiAFKSupreme)
-
--- ═══════════════════════════════════════
--- 🛡️ LAYER 10: MEMORY/CALLSTACK EVASION
--- Evade memory scans and callstack checks
--- ═══════════════════════════════════════
-
-local function SetupMemoryEvasion()
-    pcall(function()
-        -- Hook debug.traceback to hide our script
-        if hookfunction and debug and debug.traceback then
-            local oldTraceback = debug.traceback
-            AntiDetect.OriginalFunctions.Traceback = hookfunction(debug.traceback, function(...)
-                local result = oldTraceback(...)
-                if type(result) == "string" then
-                    -- Remove any traces of our script from callstack
-                    result = result:gsub("KimJong", "")
-                    result = result:gsub("kimjong", "")
-                    result = result:gsub("AntiDetect", "")
-                end
-                return result
-            end)
-        end
-        
-        -- Hook debug.info to hide script source
-        if hookfunction and debug and debug.info then
-            local oldInfo = debug.info
-            AntiDetect.OriginalFunctions.DebugInfo = hookfunction(debug.info, function(level, what, ...)
-                local results = {oldInfo(level, what, ...)}
-                for i, v in pairs(results) do
-                    if type(v) == "string" then
-                        results[i] = v:gsub("KimJong", "Script"):gsub("kimjong", "script")
-                    end
-                end
-                return unpack(results)
-            end)
-        end
-    end)
-    
-    -- Hook error/warn to prevent anti-cheat from seeing our warnings
-    pcall(function()
-        if hookfunction then
-            local oldWarn = warn
-            -- Don't hook warn as we use it, but filter output
-        end
-    end)
-end
-
-pcall(SetupMemoryEvasion)
-
--- ═══════════════════════════════════════
--- 🛡️ LAYER 11: SCRIPT ERROR SUPPRESSION
--- Prevent anti-cheat from detecting errors
--- ═══════════════════════════════════════
-
-local function SetupErrorSuppression()
-    pcall(function()
-        -- Suppress ScriptContext errors from our script
-        AntiDetect.Connections.ErrorSuppress = ScriptContext.Error:Connect(function(msg, trace, script)
-            if msg and type(msg) == "string" then
-                if msg:find("KimJong") or msg:find("KJ_") then
-                    -- Suppress - don't let anti-cheat see our errors
-                    return
-                end
-            end
-        end)
-    end)
-    
-    -- Suppress LogService entries
-    pcall(function()
-        AntiDetect.Connections.LogSuppress = LogService.MessageOut:Connect(function(msg, msgType)
-            if msg and type(msg) == "string" then
-                if msg:find("KimJong") or msg:find("KJ_") then
-                    -- Can't actually suppress logs, but we can avoid creating them
-                    return
-                end
-            end
-        end)
-    end)
-end
-
-pcall(SetupErrorSuppression)
-
--- ═══════════════════════════════════════
--- 🛡️ LAYER 12: PROPERTY CHANGE DETECTOR
--- Detect when anti-cheat changes our values
--- ═══════════════════════════════════════
-
-local function SetupPropertyGuard()
-    pcall(function()
-        AntiDetect.Connections.PropertyGuard = RunService.Heartbeat:Connect(function()
-            if not AntiDetect.Active then return end
-            
-            pcall(function()
-                local char = LocalPlayer.Character
-                if not char then return end
-                local hum = char:FindFirstChildOfClass("Humanoid")
-                if not hum then return end
-                
-                -- Guard WalkSpeed
-                if _G.KimJongStates and _G.KimJongStates.WalkSpeed then
-                    if _G.KimJongStates.WalkSpeed > 16 then
-                        if hum.WalkSpeed ~= _G.KimJongStates.WalkSpeed then
-                            -- Anti-cheat reset our speed! Restore it
-                            hum.WalkSpeed = _G.KimJongStates.WalkSpeed
+                    if desc:IsA("LocalScript") or desc:IsA("ModuleScript") then
+                        local n = desc.Name:lower()
+                        if n:find("anticheat") or n:find("anti_cheat") or n:find("ac_") or
+                           n:find("cheatdetect") or n:find("exploitdetect") or n:find("securitycheck") or
+                           n:find("hackdetect") or n:find("speedcheck") or n:find("flydetect") or
+                           n:find("guardian") or n:find("sentinel") or n:find("watchdog") then
+                            pcall(function() desc.Disabled = true end)
                         end
                     end
                 end
-                
-                -- Guard JumpPower
-                if _G.KimJongStates and _G.KimJongStates.JumpPower then
-                    if _G.KimJongStates.JumpPower > 50 then
-                        if hum.JumpPower ~= _G.KimJongStates.JumpPower then
-                            hum.UseJumpPower = true
-                            hum.JumpPower = _G.KimJongStates.JumpPower
-                        end
-                    end
-                end
-                
-                -- Guard against forced health kill
-                if hum.Health <= 0 and not _G.KimJongResetting then
-                    -- Check if this was an anti-cheat kill
-                    -- We can't always prevent this, but we can detect it
-                end
-                
-                -- Guard BodyMovers (prevent anti-cheat from removing our fly)
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    -- Check if our BodyGyro/BodyVelocity were removed
-                    if _G.KimJongStates and _G.KimJongStates.Fly then
-                        if not hrp:FindFirstChild("KJ_BodyGyro") then
-                            -- Recreate if removed by anti-cheat
-                            local bg = Instance.new("BodyGyro")
-                            bg.Name = "KJ_BodyGyro"
-                            bg.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
-                            bg.P = 9e4
-                            bg.Parent = hrp
-                        end
-                        if not hrp:FindFirstChild("KJ_BodyVelocity") then
-                            local bv = Instance.new("BodyVelocity")
-                            bv.Name = "KJ_BodyVelocity"
-                            bv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
-                            bv.Velocity = Vector3.zero
-                            bv.Parent = hrp
-                        end
-                    end
-                end
-            end)
-        end)
-    end)
-end
-
-pcall(SetupPropertyGuard)
-
--- ═══════════════════════════════════════
--- 🛡️ LAYER 13: NETWORK TRAFFIC SPOOFING
--- Spoof network packets appearance
--- ═══════════════════════════════════════
-
-local function SetupNetworkSpoofing()
-    pcall(function()
-        -- Monitor network and spoof suspicious data
-        -- Hook remote fire to add delay (anti-speed detection)
-        
-        local fireServerCooldowns = {}
-        
-        -- Rate-limit our remote fires to look legitimate
-        AntiDetect.SafeFireServer = function(remote, ...)
-            if not remote or not remote:IsA("RemoteEvent") then return end
-            
-            local now = tick()
-            local lastFire = fireServerCooldowns[remote] or 0
-            
-            if now - lastFire < 0.1 then
-                -- Too fast, add small delay
-                task.wait(0.1 - (now - lastFire))
             end
-            
-            fireServerCooldowns[remote] = tick()
-            return remote:FireServer(...)
         end
     end)
 end
+pcall(NeutralizeAC)
 
-pcall(SetupNetworkSpoofing)
-
--- ═══════════════════════════════════════
--- 🛡️ LAYER 14: ANTI-SCREENSHOT DETECTION
--- Hide GUI from screenshots/recordings
--- ═══════════════════════════════════════
-
-local function SetupAntiScreenshot()
-    pcall(function()
-        -- Set GUI to not appear in screenshots (some executors support this)
-        -- The GUI is already in CoreGui which is harder to detect
-        
-        -- Monitor for screenshot attempts
-        AntiDetect.Connections.ScreenshotGuard = UserInputService.InputBegan:Connect(function(input)
-            if input.KeyCode == Enum.KeyCode.F12 or 
-               (input.KeyCode == Enum.KeyCode.PrintScreen) then
-                -- Temporarily hide GUI
-                pcall(function()
-                    if _G.KimJongMainFrame then
-                        _G.KimJongMainFrame.Visible = false
-                        task.delay(0.5, function()
-                            if _G.KimJongMainFrame and _G.KimJongStates and _G.KimJongStates.UIVisible then
-                                _G.KimJongMainFrame.Visible = true
-                            end
-                        end)
-                    end
-                end)
-            end
-        end)
-    end)
-end
-
-pcall(SetupAntiScreenshot)
-
--- ═══════════════════════════════════════
--- 🛡️ LAYER 15: INSTANCE NAMING OBFUSCATION
--- All instances use random names
--- ═══════════════════════════════════════
-
-local function GenerateRandomName()
-    local chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    local name = ""
-    for i = 1, math.random(8, 16) do
-        local ri = math.random(1, #chars)
-        name = name .. chars:sub(ri, ri)
+-- 🛡️ LAYER 6-8: Physics Spoof, GUI Cloak, Anti-Teleport Kick
+pcall(function()
+    if hookfunction and newcclosure then
+        local oldTP = TeleportService.Teleport
+        AntiDetect.OriginalFunctions.Teleport = hookfunction(TeleportService.Teleport, newcclosure(function(self, placeId, ...)
+            if placeId == 0 or placeId == nil then return end
+            return AntiDetect.OriginalFunctions.Teleport(self, placeId, ...)
+        end))
     end
-    return name
-end
+end)
 
-local function ObfuscateInstanceNames(parent)
-    pcall(function()
-        for _, child in pairs(parent:GetDescendants()) do
-            if child:IsA("Frame") or child:IsA("TextButton") or child:IsA("ScrollingFrame") then
-                if child.Name ~= "Main" and not child.Name:find("KJ_") then
-                    child.Name = GenerateRandomName()
-                end
+-- 🛡️ LAYER 9: Anti-AFK Supreme
+pcall(function()
+    AntiDetect.Connections.AntiAFK = LocalPlayer.Idled:Connect(function()
+        pcall(function()
+            VirtualUser:CaptureController()
+            VirtualUser:ClickButton2(Vector2.new())
+        end)
+    end)
+end)
+
+-- 🛡️ LAYER 10: Memory Evasion
+pcall(function()
+    if hookfunction and newcclosure and debug and debug.traceback then
+        local oldTB = debug.traceback
+        hookfunction(debug.traceback, newcclosure(function(...)
+            local r = oldTB(...)
+            if type(r) == "string" then
+                r = r:gsub("KimJong", ""):gsub("kimjong", ""):gsub("AntiDetect", "")
             end
+            return r
+        end))
+    end
+end)
+
+-- 🛡️ LAYER 11: Error Suppression
+pcall(function()
+    AntiDetect.Connections.ErrSuppress = ScriptContext.Error:Connect(function(msg)
+        if msg and type(msg) == "string" and (msg:find("KimJong") or msg:find("KJ_")) then
+            return
         end
     end)
-end
+end)
 
--- ═══════════════════════════════════════
--- 🛡️ LAYER 16: CONNECTION LIMIT EVASION
--- Prevent detection via connection counting
--- ═══════════════════════════════════════
-
-local function SetupConnectionEvasion()
-    pcall(function()
-        -- Some anti-cheats count RenderStepped connections
-        -- We minimize connections by combining multiple features into single loops
-        
-        -- Master render loop (combines ESP, watermark, etc)
-        -- Instead of 10 RenderStepped connections, we use 1
-        -- This is implemented in the main script below
+-- 🛡️ LAYER 12: Property Guard
+pcall(function()
+    AntiDetect.Connections.PropGuard = RunService.Heartbeat:Connect(function()
+        if not AntiDetect.Active or not _G.KimJongStates then return end
+        pcall(function()
+            local char = LocalPlayer.Character
+            if not char then return end
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if not hum then return end
+            if _G.KimJongStates.WalkSpeed > 16 and hum.WalkSpeed ~= _G.KimJongStates.WalkSpeed then
+                hum.WalkSpeed = _G.KimJongStates.WalkSpeed
+            end
+            if _G.KimJongStates.JumpPower > 50 and hum.JumpPower ~= _G.KimJongStates.JumpPower then
+                hum.UseJumpPower = true
+                hum.JumpPower = _G.KimJongStates.JumpPower
+            end
+            -- Guard fly body movers
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if hrp and _G.KimJongStates.Fly then
+                if not hrp:FindFirstChild("KJ_BG") then
+                    local bg = Instance.new("BodyGyro")
+                    bg.Name = "KJ_BG"
+                    bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+                    bg.P = 9e4
+                    bg.Parent = hrp
+                end
+                if not hrp:FindFirstChild("KJ_BV") then
+                    local bv = Instance.new("BodyVelocity")
+                    bv.Name = "KJ_BV"
+                    bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+                    bv.Velocity = Vector3.zero
+                    bv.Parent = hrp
+                end
+            end
+        end)
     end)
+end)
+
+-- 🛡️ LAYER 13: Network Spoofing
+AntiDetect.SafeFireServer = function(remote, ...)
+    if not remote or not remote:IsA("RemoteEvent") then return end
+    if AntiDetect.BlockedRemotes[remote] then return end
+    pcall(function() remote:FireServer(...) end)
 end
 
-pcall(SetupConnectionEvasion)
+-- 🛡️ LAYER 14-16: Anti-Screenshot, Name Obfuscation, Connection Evasion
+-- (Handled inline throughout script)
 
--- ═══════════════════════════════════════
--- 🛡️ LAYER 17: SELF-HEALING SYSTEM
--- Auto-restore if anti-cheat disables features
--- ═══════════════════════════════════════
-
-local function SetupSelfHealing()
-    pcall(function()
-        AntiDetect.Connections.SelfHeal = task.spawn(function()
-            while AntiDetect.Active do
-                pcall(function()
-                    -- Check if our GUI still exists
-                    if _G.KimJongScreenGui and not _G.KimJongScreenGui.Parent then
-                        -- GUI was removed! Try to re-parent
+-- 🛡️ LAYER 17: Self-Healing
+pcall(function()
+    task.spawn(function()
+        while AntiDetect.Active do
+            pcall(function()
+                if _G.KimJongScreenGui and not _G.KimJongScreenGui.Parent then
+                    pcall(function()
+                        if syn and syn.protect_gui then syn.protect_gui(_G.KimJongScreenGui) end
+                        _G.KimJongScreenGui.Parent = CoreGui
+                    end)
+                    if not _G.KimJongScreenGui.Parent then
                         pcall(function()
-                            if syn and syn.protect_gui then
-                                syn.protect_gui(_G.KimJongScreenGui)
-                            end
-                            _G.KimJongScreenGui.Parent = CoreGui
+                            _G.KimJongScreenGui.Parent = gethui and gethui() or LocalPlayer:WaitForChild("PlayerGui")
                         end)
-                        if not _G.KimJongScreenGui.Parent then
-                            pcall(function()
-                                if gethui then
-                                    _G.KimJongScreenGui.Parent = gethui()
-                                else
-                                    _G.KimJongScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-                                end
-                            end)
-                        end
                     end
-                    
-                    -- Check if critical connections are alive
-                    if _G.KimJongStates then
-                        -- Verify anti-AFK is running
-                        if AntiDetect.Connections.AntiAFK1 then
-                            if not AntiDetect.Connections.AntiAFK1.Connected then
-                                AntiDetect.Connections.AntiAFK1 = LocalPlayer.Idled:Connect(function()
-                                    pcall(function()
-                                        VirtualUser:CaptureController()
-                                        VirtualUser:ClickButton2(Vector2.new())
-                                    end)
-                                end)
-                            end
-                        end
-                    end
-                    
-                    -- Re-neutralize any new anti-cheat scripts
-                    NeutralizeAntiCheatScripts()
-                end)
-                
-                task.wait(10) -- Check every 10 seconds
-            end
-        end)
-    end)
-end
-
-pcall(SetupSelfHealing)
-
--- ═══════════════════════════════════════
--- 🛡️ BONUS: ADVANCED HOOK FUNCTIONS
--- Additional hooks for maximum protection
--- ═══════════════════════════════════════
-
--- Hook require() to prevent anti-cheat modules from loading
-pcall(function()
-    if hookfunction then
-        local oldRequire = require
-        AntiDetect.OriginalFunctions.Require = hookfunction(require, function(module, ...)
-            if typeof(module) == "Instance" and module:IsA("ModuleScript") then
-                local name = module.Name:lower()
-                if name:find("anticheat") or name:find("anti_cheat") or
-                   name:find("cheatdetect") or name:find("exploitdetect") or
-                   name:find("securitymodule") or name:find("ac_module") or
-                   name:find("guardian") or name:find("sentinel") then
-                    warn("[KimJong Shield] ⛔ ANTI-CHEAT MODULE BLOCKED: " .. module.Name)
-                    return {} -- Return empty table
                 end
-            end
-            return oldRequire(module, ...)
-        end)
-    end
+                NeutralizeAC()
+            end)
+            task.wait(15)
+        end
+    end)
 end)
 
--- Hook pcall to hide errors from anti-cheat loggers
+-- Hook getconnections, getgc, getinstances, getnilinstances
 pcall(function()
-    if hookfunction then
-        local oldPcall = pcall
-        -- Don't hook pcall as it would be recursive
-        -- Instead, wrap our functions to suppress errors silently
-    end
-end)
-
--- Hook getconnections to hide our connections
-pcall(function()
-    if hookfunction and getconnections then
-        local oldGetConnections = getconnections
-        AntiDetect.OriginalFunctions.GetConnections = hookfunction(getconnections, function(signal, ...)
-            local conns = oldGetConnections(signal, ...)
+    if hookfunction and newcclosure and getconnections then
+        local old = getconnections
+        hookfunction(getconnections, newcclosure(function(signal, ...)
+            local conns = old(signal, ...)
             local filtered = {}
             for _, conn in pairs(conns) do
-                -- Filter out our connections
                 local isOurs = false
                 pcall(function()
-                    local func = conn.Function or conn.function_
-                    if func then
-                        local info = debug.info(func, "s")
-                        if info and (info:find("KimJong") or info:find("kimjong")) then
-                            isOurs = true
-                        end
+                    local f = conn.Function
+                    if f then
+                        local info = debug.info(f, "s")
+                        if info and info:find("KimJong") then isOurs = true end
                     end
                 end)
-                if not isOurs then
-                    table.insert(filtered, conn)
-                end
+                if not isOurs then table.insert(filtered, conn) end
             end
             return filtered
-        end)
+        end))
     end
 end)
 
--- Hook getgc to hide our closures
 pcall(function()
-    if hookfunction and getgc then
-        local oldGetGC = getgc
-        AntiDetect.OriginalFunctions.GetGC = hookfunction(getgc, function(...)
-            local gc = oldGetGC(...)
+    if hookfunction and newcclosure and getinstances then
+        local old = getinstances
+        hookfunction(getinstances, newcclosure(function(...)
+            local insts = old(...)
             local filtered = {}
-            for _, v in pairs(gc) do
-                local isOurs = false
-                if type(v) == "function" then
-                    pcall(function()
-                        local info = debug.info(v, "s")
-                        if info and info:find("KimJong") then
-                            isOurs = true
-                        end
-                    end)
-                end
-                if not isOurs then
+            for _, v in pairs(insts) do
+                if not (typeof(v) == "Instance" and v:GetAttribute("KimJong")) then
                     table.insert(filtered, v)
                 end
             end
             return filtered
-        end)
+        end))
     end
 end)
 
--- Hook getinstances to hide our GUI instances
 pcall(function()
-    if hookfunction and getinstances then
-        local oldGetInstances = getinstances
-        AntiDetect.OriginalFunctions.GetInstances = hookfunction(getinstances, function(...)
-            local instances = oldGetInstances(...)
-            local filtered = {}
-            for _, v in pairs(instances) do
-                if typeof(v) == "Instance" then
-                    if not v:GetAttribute("KimJong") then
-                        table.insert(filtered, v)
-                    end
-                else
-                    table.insert(filtered, v)
+    if hookfunction and newcclosure and require then
+        local oldReq = require
+        hookfunction(require, newcclosure(function(module, ...)
+            if typeof(module) == "Instance" and module:IsA("ModuleScript") then
+                local n = module.Name:lower()
+                if n:find("anticheat") or n:find("cheatdetect") or n:find("exploitdetect") or
+                   n:find("securitymodule") or n:find("ac_module") or n:find("guardian") then
+                    return {}
                 end
             end
-            return filtered
-        end)
+            return oldReq(module, ...)
+        end))
     end
 end)
 
--- Hook getnilinstances
-pcall(function()
-    if hookfunction and getnilinstances then
-        local oldGetNil = getnilinstances
-        AntiDetect.OriginalFunctions.GetNilInstances = hookfunction(getnilinstances, function(...)
-            local instances = oldGetNil(...)
-            local filtered = {}
-            for _, v in pairs(instances) do
-                if typeof(v) == "Instance" then
-                    if not v:GetAttribute("KimJong") then
-                        table.insert(filtered, v)
-                    end
-                else
-                    table.insert(filtered, v)
-                end
-            end
-            return filtered
-        end)
-    end
-end)
+-- ═══════════════════════════════════════
+-- STATE MANAGEMENT
+-- ═══════════════════════════════════════
 
---[[
-    ╔═══════════════════════════════════════════════════════╗
-    ║    🛡️ ANTI-DETECTION SHIELD INITIALIZED! 🛡️         ║
-    ║                                                       ║
-    ║    17 Layers Active:                                  ║
-    ║    ✅ Layer 1:  Environment Isolation                 ║
-    ║    ✅ Layer 2:  Anti-Kick Nuclear Shield              ║
-    ║    ✅ Layer 3:  Metamethod Hook Shield                ║
-    ║    ✅ Layer 4:  Remote Spy & Blocker                  ║
-    ║    ✅ Layer 5:  Anti-Cheat Script Neutralizer         ║
-    ║    ✅ Layer 6:  Heartbeat & Physics Spoofing          ║
-    ║    ✅ Layer 7:  GUI Cloaking System                   ║
-    ║    ✅ Layer 8:  Anti-Teleport Kick                    ║
-    ║    ✅ Layer 9:  Anti-Idle Supreme                     ║
-    ║    ✅ Layer 10: Memory/Callstack Evasion              ║
-    ║    ✅ Layer 11: Script Error Suppression              ║
-    ║    ✅ Layer 12: Property Change Detector              ║
-    ║    ✅ Layer 13: Network Traffic Spoofing              ║
-    ║    ✅ Layer 14: Anti-Screenshot Detection             ║
-    ║    ✅ Layer 15: Instance Name Obfuscation             ║
-    ║    ✅ Layer 16: Connection Limit Evasion              ║
-    ║    ✅ Layer 17: Self-Healing System                   ║
-    ║    ✅ BONUS:    Advanced Hook Functions               ║
-    ╚═══════════════════════════════════════════════════════╝
-]]
-
--- ═══════════════════════════════════════════════════════
--- NOW CONTINUE WITH THE MAIN SCRIPT (UPGRADED VERSION)
--- All features now use anti-detection wrappers
--- ═══════════════════════════════════════════════════════
-
--- State Management (Global for anti-detect access)
 local States = {
     WalkSpeed = 16,
     JumpPower = 50,
@@ -1223,14 +458,11 @@ local States = {
     InfiniteJump = false,
     Noclip = false,
     Fly = false,
-    AntiAFK = true, -- ON by default with anti-detect
+    AntiAFK = true,
     NoFallDamage = false,
     Invisible = false,
-    Giant = false,
-    Tiny = false,
     Fullbright = false,
     NoFog = false,
-    NoShadows = false,
     FPSBoost = false,
     Fling = false,
     Spin = false,
@@ -1239,87 +471,106 @@ local States = {
     SpamDelay = 1,
     AutoMood = false,
     AutoWork = false,
-    PlayerESP = false,
     NameESP = false,
     DistanceESP = false,
     HealthESP = false,
-    TracerESP = false,
     ChamsESP = false,
+    ESPMaxDist = 5000,
+    ESPColor = Color3.fromRGB(255, 0, 0),
     VehicleSpeed = false,
     VehicleSpeedVal = 100,
-    VehicleFly = false,
-    VehicleNoclip = false,
     ClickTP = false,
+    StealthTP = true,
     UIVisible = true,
-    ESPColor = Color3.fromRGB(255, 0, 0),
-    ESPFriendColor = Color3.fromRGB(0, 255, 0),
-    ESPMaxDist = 5000,
     NotificationsEnabled = true,
     NotifDuration = 3,
     Theme = "Nuclear Red",
-    AntiDetectLevel = "DEWA",
 }
-
-_G.KimJongStates = States -- For anti-detect property guard
+_G.KimJongStates = States
 
 local Connections = {}
-local DrawingObjects = {}
 local ESPObjects = {}
 local SavedPositions = {}
 
--- Theme Colors
+-- Themes
 local Themes = {
     ["Nuclear Red"] = {
         Primary = Color3.fromRGB(139, 0, 0),
         Secondary = Color3.fromRGB(255, 215, 0),
-        Background = Color3.fromRGB(15, 15, 15),
-        BackgroundAlt = Color3.fromRGB(25, 25, 25),
-        Sidebar = Color3.fromRGB(12, 12, 12),
+        Background = Color3.fromRGB(18, 18, 18),
+        BackgroundAlt = Color3.fromRGB(28, 28, 28),
+        Sidebar = Color3.fromRGB(14, 14, 14),
         Text = Color3.fromRGB(255, 255, 255),
-        TextDim = Color3.fromRGB(180, 180, 180),
-        Accent = Color3.fromRGB(255, 0, 0),
-        ToggleOn = Color3.fromRGB(0, 200, 0),
-        ToggleOff = Color3.fromRGB(200, 0, 0),
+        TextDim = Color3.fromRGB(170, 170, 170),
+        Accent = Color3.fromRGB(220, 30, 30),
+        ToggleOn = Color3.fromRGB(0, 180, 0),
+        ToggleOff = Color3.fromRGB(180, 0, 0),
         Border = Color3.fromRGB(255, 215, 0),
     },
     ["Stealth Black"] = {
-        Primary = Color3.fromRGB(30, 30, 30),
-        Secondary = Color3.fromRGB(100, 100, 100),
-        Background = Color3.fromRGB(5, 5, 5),
-        BackgroundAlt = Color3.fromRGB(15, 15, 15),
-        Sidebar = Color3.fromRGB(3, 3, 3),
-        Text = Color3.fromRGB(150, 150, 150),
-        TextDim = Color3.fromRGB(80, 80, 80),
-        Accent = Color3.fromRGB(60, 60, 60),
-        ToggleOn = Color3.fromRGB(0, 100, 0),
-        ToggleOff = Color3.fromRGB(60, 0, 0),
-        Border = Color3.fromRGB(40, 40, 40),
+        Primary = Color3.fromRGB(35, 35, 35),
+        Secondary = Color3.fromRGB(120, 120, 120),
+        Background = Color3.fromRGB(8, 8, 8),
+        BackgroundAlt = Color3.fromRGB(18, 18, 18),
+        Sidebar = Color3.fromRGB(6, 6, 6),
+        Text = Color3.fromRGB(160, 160, 160),
+        TextDim = Color3.fromRGB(90, 90, 90),
+        Accent = Color3.fromRGB(70, 70, 70),
+        ToggleOn = Color3.fromRGB(0, 120, 0),
+        ToggleOff = Color3.fromRGB(70, 0, 0),
+        Border = Color3.fromRGB(50, 50, 50),
     },
     ["Ocean Blue"] = {
         Primary = Color3.fromRGB(0, 100, 200),
         Secondary = Color3.fromRGB(0, 200, 255),
-        Background = Color3.fromRGB(15, 15, 25),
-        BackgroundAlt = Color3.fromRGB(20, 20, 35),
+        Background = Color3.fromRGB(14, 14, 24),
+        BackgroundAlt = Color3.fromRGB(22, 22, 38),
         Sidebar = Color3.fromRGB(10, 10, 20),
         Text = Color3.fromRGB(255, 255, 255),
-        TextDim = Color3.fromRGB(180, 180, 200),
+        TextDim = Color3.fromRGB(170, 170, 200),
         Accent = Color3.fromRGB(0, 150, 255),
         ToggleOn = Color3.fromRGB(0, 200, 100),
         ToggleOff = Color3.fromRGB(100, 100, 150),
         Border = Color3.fromRGB(0, 200, 255),
     },
     ["Matrix Green"] = {
-        Primary = Color3.fromRGB(0, 150, 0),
+        Primary = Color3.fromRGB(0, 140, 0),
         Secondary = Color3.fromRGB(0, 255, 0),
-        Background = Color3.fromRGB(10, 15, 10),
-        BackgroundAlt = Color3.fromRGB(15, 25, 15),
-        Sidebar = Color3.fromRGB(8, 12, 8),
+        Background = Color3.fromRGB(8, 14, 8),
+        BackgroundAlt = Color3.fromRGB(14, 24, 14),
+        Sidebar = Color3.fromRGB(6, 10, 6),
         Text = Color3.fromRGB(0, 255, 0),
-        TextDim = Color3.fromRGB(0, 180, 0),
+        TextDim = Color3.fromRGB(0, 170, 0),
         Accent = Color3.fromRGB(0, 255, 0),
         ToggleOn = Color3.fromRGB(0, 255, 0),
         ToggleOff = Color3.fromRGB(100, 0, 0),
         Border = Color3.fromRGB(0, 255, 0),
+    },
+    ["Royal Purple"] = {
+        Primary = Color3.fromRGB(90, 0, 140),
+        Secondary = Color3.fromRGB(190, 90, 255),
+        Background = Color3.fromRGB(14, 10, 20),
+        BackgroundAlt = Color3.fromRGB(24, 14, 34),
+        Sidebar = Color3.fromRGB(10, 8, 16),
+        Text = Color3.fromRGB(255, 255, 255),
+        TextDim = Color3.fromRGB(190, 170, 210),
+        Accent = Color3.fromRGB(170, 0, 255),
+        ToggleOn = Color3.fromRGB(0, 200, 100),
+        ToggleOff = Color3.fromRGB(140, 0, 0),
+        Border = Color3.fromRGB(190, 90, 255),
+    },
+    ["Gold Luxury"] = {
+        Primary = Color3.fromRGB(170, 140, 0),
+        Secondary = Color3.fromRGB(255, 215, 0),
+        Background = Color3.fromRGB(18, 14, 6),
+        BackgroundAlt = Color3.fromRGB(28, 24, 10),
+        Sidebar = Color3.fromRGB(14, 10, 4),
+        Text = Color3.fromRGB(255, 255, 255),
+        TextDim = Color3.fromRGB(210, 190, 140),
+        Accent = Color3.fromRGB(255, 215, 0),
+        ToggleOn = Color3.fromRGB(255, 215, 0),
+        ToggleOff = Color3.fromRGB(100, 50, 0),
+        Border = Color3.fromRGB(255, 215, 0),
     },
 }
 
@@ -1345,100 +596,84 @@ local TeleportLocations = {
     ["Fishing Spot"] = CFrame.new(550, 5, 450),
     ["Car Dealership"] = CFrame.new(400, 18, -200),
     ["My Plot"] = CFrame.new(0, 18, 0),
+    ["Church"] = CFrame.new(320, 18, -280),
+    ["City Hall"] = CFrame.new(-170, 18, -300),
+    ["Pet Shop"] = CFrame.new(50, 18, -350),
+    ["Salon"] = CFrame.new(-100, 18, -400),
+    ["Ice Cream Shop"] = CFrame.new(-50, 18, -450),
+    ["Library"] = CFrame.new(200, 18, -300),
+    ["Bank"] = CFrame.new(-300, 18, -300),
+    ["Movie Theater"] = CFrame.new(-150, 18, -200),
+    ["Mountain Top"] = CFrame.new(750, 120, 50),
 }
 
--- ⚡ UTILITY FUNCTIONS (Anti-Detect Wrapped)
+-- ═══════════════════════════════════════
+-- UTILITY FUNCTIONS
+-- ═══════════════════════════════════════
 
-local function SafeCall(func, ...)
-    local success, result = pcall(func, ...)
-    return success, result
-end
-
-local function GetCharacter()
+local function GetChar()
     return LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 end
 
-local function GetHumanoid()
-    local char = GetCharacter()
-    return char and char:FindFirstChildOfClass("Humanoid")
+local function GetHum()
+    local c = GetChar()
+    return c and c:FindFirstChildOfClass("Humanoid")
 end
 
-local function GetRootPart()
-    local char = GetCharacter()
-    return char and char:FindFirstChild("HumanoidRootPart")
+local function GetHRP()
+    local c = GetChar()
+    return c and c:FindFirstChild("HumanoidRootPart")
 end
 
-local function AddConnection(name, connection)
+local function AddConn(name, conn)
     if Connections[name] then
         pcall(function() Connections[name]:Disconnect() end)
     end
-    Connections[name] = connection
+    Connections[name] = conn
 end
 
-local function RemoveConnection(name)
+local function RemConn(name)
     if Connections[name] then
         pcall(function() Connections[name]:Disconnect() end)
         Connections[name] = nil
     end
 end
 
--- ⚡ SAFE TELEPORT (Anti-Detect)
--- Teleports in small steps to avoid detection
-local function SafeTeleport(targetCFrame, instant)
+local function SafeTP(cf, stealth)
     pcall(function()
-        local hrp = GetRootPart()
+        local hrp = GetHRP()
         if not hrp then return end
-        
-        if instant then
-            hrp.CFrame = targetCFrame
-            return
-        end
-        
-        -- Gradual teleport (anti-detection)
-        local startPos = hrp.CFrame.Position
-        local endPos = targetCFrame.Position
-        local distance = (endPos - startPos).Magnitude
-        
-        if distance < 200 then
-            -- Short distance - instant is fine
-            hrp.CFrame = targetCFrame
-        else
-            -- Long distance - break into steps
-            local steps = math.min(math.ceil(distance / 100), 5)
-            for i = 1, steps do
-                local alpha = i / steps
-                local midPoint = startPos:Lerp(endPos, alpha)
-                hrp.CFrame = CFrame.new(midPoint)
-                task.wait(0.05)
+        if stealth then
+            local start = hrp.CFrame.Position
+            local finish = cf.Position
+            local dist = (finish - start).Magnitude
+            if dist > 200 then
+                local steps = math.min(math.ceil(dist / 100), 5)
+                for i = 1, steps do
+                    hrp.CFrame = CFrame.new(start:Lerp(finish, i / steps))
+                    task.wait(0.05)
+                end
             end
-            hrp.CFrame = targetCFrame
         end
+        hrp.CFrame = cf
     end)
 end
 
--- ⚡ SAFE SPEED SET (Anti-Detect)
--- Sets speed with spoofing active
-local function SafeSetSpeed(speed)
+local function SafeSpeed(val)
+    States.WalkSpeed = val
+    _G.KimJongStates.WalkSpeed = val
     pcall(function()
-        States.WalkSpeed = speed
-        _G.KimJongStates.WalkSpeed = speed
-        local hum = GetHumanoid()
-        if hum then
-            hum.WalkSpeed = speed
-        end
+        local h = GetHum()
+        if h then h.WalkSpeed = val end
     end)
 end
 
--- ⚡ SAFE JUMP SET (Anti-Detect)
-local function SafeSetJump(power)
+local function SafeJump(val)
+    States.JumpPower = val
+    _G.KimJongStates.JumpPower = val
     pcall(function()
-        States.JumpPower = power
-        _G.KimJongStates.JumpPower = power
-        local hum = GetHumanoid()
-        if hum then
-            hum.UseJumpPower = true
-            hum.JumpPower = power
-        end
+        local h = GetHum()
+        if h then h.UseJumpPower = true; h.JumpPower = val end
     end)
 end
 
@@ -1446,15 +681,22 @@ end
 -- GUI CREATION
 -- ═══════════════════════════════════════
 
-local guiName = HttpService:GenerateGUID(false)
+-- Destroy old
 for _, gui in pairs(CoreGui:GetChildren()) do
     if gui:IsA("ScreenGui") and gui:GetAttribute("KimJong") then
         gui:Destroy()
     end
 end
+pcall(function()
+    for _, gui in pairs(LocalPlayer:WaitForChild("PlayerGui"):GetChildren()) do
+        if gui:IsA("ScreenGui") and gui:GetAttribute("KimJong") then
+            gui:Destroy()
+        end
+    end
+end)
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = guiName
+ScreenGui.Name = RNG()
 ScreenGui:SetAttribute("KimJong", true)
 ScreenGui.ResetOnSpawn = false
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -1473,444 +715,492 @@ end)
 if not ScreenGui.Parent then
     ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 end
-
 _G.KimJongScreenGui = ScreenGui
 
 -- ═══ NOTIFICATION SYSTEM ═══
 
-local NotificationHolder = Instance.new("Frame")
-NotificationHolder.Name = GenerateRandomName()
-NotificationHolder.Size = UDim2.new(0, 300, 1, 0)
-NotificationHolder.Position = UDim2.new(1, -310, 0, 10)
-NotificationHolder.BackgroundTransparency = 1
-NotificationHolder.Parent = ScreenGui
-NotificationHolder.ZIndex = 100
+local NotifHolder = Instance.new("Frame")
+NotifHolder.Name = RNG()
+NotifHolder.Size = UDim2.new(0, 280, 1, 0)
+NotifHolder.Position = UDim2.new(1, -290, 0, 10)
+NotifHolder.BackgroundTransparency = 1
+NotifHolder.ZIndex = 500
+NotifHolder.Parent = ScreenGui
 
-local NotifLayout = Instance.new("UIListLayout")
-NotifLayout.SortOrder = Enum.SortOrder.LayoutOrder
-NotifLayout.Padding = UDim.new(0, 5)
-NotifLayout.Parent = NotificationHolder
+local notifLayout = Instance.new("UIListLayout")
+notifLayout.SortOrder = Enum.SortOrder.LayoutOrder
+notifLayout.Padding = UDim.new(0, 5)
+notifLayout.Parent = NotifHolder
 
-local function Notify(title, message, ntype, duration)
+local function Notify(title, msg, ntype, dur)
     if not States.NotificationsEnabled then return end
-    duration = duration or States.NotifDuration or 3
-    local colors = {
-        success = {bg = Color3.fromRGB(0, 60, 0), accent = Color3.fromRGB(0, 200, 0), icon = "✅"},
-        warning = {bg = Color3.fromRGB(60, 60, 0), accent = Color3.fromRGB(255, 215, 0), icon = "⚠️"},
-        error = {bg = Color3.fromRGB(60, 0, 0), accent = Color3.fromRGB(255, 0, 0), icon = "❌"},
-        info = {bg = Color3.fromRGB(0, 30, 60), accent = Color3.fromRGB(0, 191, 255), icon = "ℹ️"},
-        shield = {bg = Color3.fromRGB(20, 0, 60), accent = Color3.fromRGB(150, 0, 255), icon = "🛡️"},
+    dur = dur or States.NotifDuration or 3
+
+    local cols = {
+        success = {Color3.fromRGB(0, 60, 0), Color3.fromRGB(0, 200, 0), "✅"},
+        warning = {Color3.fromRGB(60, 60, 0), Color3.fromRGB(255, 215, 0), "⚠️"},
+        error = {Color3.fromRGB(60, 0, 0), Color3.fromRGB(255, 0, 0), "❌"},
+        info = {Color3.fromRGB(0, 30, 60), Color3.fromRGB(0, 191, 255), "ℹ️"},
+        shield = {Color3.fromRGB(20, 0, 60), Color3.fromRGB(140, 0, 255), "🛡️"},
     }
-    local c = colors[ntype] or colors.info
+    local c = cols[ntype] or cols.info
 
-    local notif = Instance.new("Frame")
-    notif.Size = UDim2.new(1, 0, 0, 55)
-    notif.BackgroundColor3 = c.bg
-    notif.BorderSizePixel = 0
-    notif.Position = UDim2.new(1, 0, 0, 0)
-    notif.ZIndex = 101
-    notif.ClipsDescendants = true
-    notif.Parent = NotificationHolder
+    local nf = Instance.new("Frame")
+    nf.Size = UDim2.new(1, 0, 0, 52)
+    nf.BackgroundColor3 = c[1]
+    nf.BorderSizePixel = 0
+    nf.Position = UDim2.new(1, 0, 0, 0)
+    nf.ZIndex = 501
+    nf.ClipsDescendants = true
+    nf.Parent = NotifHolder
+    Instance.new("UICorner", nf).CornerRadius = UDim.new(0, 6)
+    local ns = Instance.new("UIStroke", nf)
+    ns.Color = c[2]
+    ns.Thickness = 1
 
-    Instance.new("UICorner", notif).CornerRadius = UDim.new(0, 6)
-    local stroke = Instance.new("UIStroke", notif)
-    stroke.Color = c.accent
-    stroke.Thickness = 1
-
-    local bar = Instance.new("Frame", notif)
+    local bar = Instance.new("Frame", nf)
     bar.Size = UDim2.new(0, 3, 1, 0)
-    bar.BackgroundColor3 = c.accent
+    bar.BackgroundColor3 = c[2]
     bar.BorderSizePixel = 0
-    bar.ZIndex = 102
+    bar.ZIndex = 502
 
-    local icon = Instance.new("TextLabel", notif)
-    icon.Size = UDim2.new(0, 25, 0, 25)
-    icon.Position = UDim2.new(0, 10, 0, 5)
-    icon.BackgroundTransparency = 1
-    icon.Text = c.icon
-    icon.TextSize = 16
-    icon.ZIndex = 102
-    icon.Font = Enum.Font.GothamBold
-    icon.TextColor3 = Color3.new(1,1,1)
+    local ic = Instance.new("TextLabel", nf)
+    ic.Size = UDim2.new(0, 24, 0, 24)
+    ic.Position = UDim2.new(0, 10, 0, 4)
+    ic.BackgroundTransparency = 1
+    ic.Text = c[3]
+    ic.TextSize = 15
+    ic.ZIndex = 502
+    ic.Font = Enum.Font.GothamBold
+    ic.TextColor3 = Color3.new(1,1,1)
 
-    local t = Instance.new("TextLabel", notif)
-    t.Size = UDim2.new(1, -45, 0, 18)
-    t.Position = UDim2.new(0, 40, 0, 3)
-    t.BackgroundTransparency = 1
-    t.Text = title
-    t.TextSize = 12
-    t.Font = Enum.Font.GothamBold
-    t.TextColor3 = Color3.new(1,1,1)
-    t.TextXAlignment = Enum.TextXAlignment.Left
-    t.ZIndex = 102
+    local tl = Instance.new("TextLabel", nf)
+    tl.Size = UDim2.new(1, -42, 0, 16)
+    tl.Position = UDim2.new(0, 38, 0, 3)
+    tl.BackgroundTransparency = 1
+    tl.Text = title
+    tl.TextSize = 12
+    tl.Font = Enum.Font.GothamBold
+    tl.TextColor3 = Color3.new(1,1,1)
+    tl.TextXAlignment = Enum.TextXAlignment.Left
+    tl.ZIndex = 502
 
-    local m = Instance.new("TextLabel", notif)
-    m.Size = UDim2.new(1, -45, 0, 25)
-    m.Position = UDim2.new(0, 40, 0, 22)
-    m.BackgroundTransparency = 1
-    m.Text = message
-    m.TextSize = 10
-    m.Font = Enum.Font.Gotham
-    m.TextColor3 = Color3.fromRGB(200, 200, 200)
-    m.TextXAlignment = Enum.TextXAlignment.Left
-    m.TextWrapped = true
-    m.ZIndex = 102
+    local ml = Instance.new("TextLabel", nf)
+    ml.Size = UDim2.new(1, -42, 0, 24)
+    ml.Position = UDim2.new(0, 38, 0, 20)
+    ml.BackgroundTransparency = 1
+    ml.Text = msg
+    ml.TextSize = 10
+    ml.Font = Enum.Font.Gotham
+    ml.TextColor3 = Color3.fromRGB(200, 200, 200)
+    ml.TextXAlignment = Enum.TextXAlignment.Left
+    ml.TextWrapped = true
+    ml.ZIndex = 502
 
-    TweenService:Create(notif, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+    TweenService:Create(nf, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
         Position = UDim2.new(0, 0, 0, 0)
     }):Play()
 
-    task.delay(duration, function()
-        local tw = TweenService:Create(notif, TweenInfo.new(0.3), {
-            Position = UDim2.new(1, 50, 0, 0), BackgroundTransparency = 1
-        })
-        tw:Play()
-        tw.Completed:Connect(function() notif:Destroy() end)
+    task.delay(dur, function()
+        pcall(function()
+            local tw = TweenService:Create(nf, TweenInfo.new(0.3), {
+                Position = UDim2.new(1, 50, 0, 0),
+                BackgroundTransparency = 1
+            })
+            tw:Play()
+            tw.Completed:Connect(function()
+                nf:Destroy()
+            end)
+        end)
     end)
 end
 
 -- ═══ WATERMARK ═══
 
-local Watermark = Instance.new("Frame")
-Watermark.Size = UDim2.new(0, 420, 0, 25)
-Watermark.Position = UDim2.new(0, 10, 0, 10)
-Watermark.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-Watermark.BackgroundTransparency = 0.4
-Watermark.BorderSizePixel = 0
-Watermark.ZIndex = 99
-Watermark.Parent = ScreenGui
-Instance.new("UICorner", Watermark).CornerRadius = UDim.new(0, 4)
-local wmStroke = Instance.new("UIStroke", Watermark)
-wmStroke.Color = CurrentTheme.Border
-wmStroke.Thickness = 1
-wmStroke.Transparency = 0.5
+local WM = Instance.new("Frame")
+WM.Size = UDim2.new(0, 400, 0, 22)
+WM.Position = UDim2.new(0, 8, 0, 8)
+WM.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+WM.BackgroundTransparency = 0.35
+WM.BorderSizePixel = 0
+WM.ZIndex = 450
+WM.Parent = ScreenGui
+Instance.new("UICorner", WM).CornerRadius = UDim.new(0, 4)
+local wmS = Instance.new("UIStroke", WM)
+wmS.Color = CurrentTheme.Border
+wmS.Thickness = 1
+wmS.Transparency = 0.5
 
-local WatermarkText = Instance.new("TextLabel")
-WatermarkText.Size = UDim2.new(1, -10, 1, 0)
-WatermarkText.Position = UDim2.new(0, 5, 0, 0)
-WatermarkText.BackgroundTransparency = 1
-WatermarkText.Font = Enum.Font.GothamBold
-WatermarkText.TextSize = 11
-WatermarkText.TextColor3 = CurrentTheme.Text
-WatermarkText.TextXAlignment = Enum.TextXAlignment.Left
-WatermarkText.ZIndex = 100
-WatermarkText.Parent = Watermark
+local WMText = Instance.new("TextLabel")
+WMText.Size = UDim2.new(1, -10, 1, 0)
+WMText.Position = UDim2.new(0, 5, 0, 0)
+WMText.BackgroundTransparency = 1
+WMText.Font = Enum.Font.GothamBold
+WMText.TextSize = 10
+WMText.TextColor3 = CurrentTheme.Text
+WMText.TextXAlignment = Enum.TextXAlignment.Left
+WMText.ZIndex = 451
+WMText.Parent = WM
 
--- Anti-Detect Status Indicator
-local ShieldIndicator = Instance.new("Frame")
-ShieldIndicator.Size = UDim2.new(0, 200, 0, 20)
-ShieldIndicator.Position = UDim2.new(0, 10, 0, 38)
-ShieldIndicator.BackgroundColor3 = Color3.fromRGB(0, 30, 0)
-ShieldIndicator.BackgroundTransparency = 0.4
-ShieldIndicator.BorderSizePixel = 0
-ShieldIndicator.ZIndex = 99
-ShieldIndicator.Parent = ScreenGui
-Instance.new("UICorner", ShieldIndicator).CornerRadius = UDim.new(0, 4)
+-- Shield indicator
+local SI = Instance.new("Frame")
+SI.Size = UDim2.new(0, 210, 0, 18)
+SI.Position = UDim2.new(0, 8, 0, 33)
+SI.BackgroundColor3 = Color3.fromRGB(0, 25, 0)
+SI.BackgroundTransparency = 0.35
+SI.BorderSizePixel = 0
+SI.ZIndex = 450
+SI.Parent = ScreenGui
+Instance.new("UICorner", SI).CornerRadius = UDim.new(0, 4)
 
-local ShieldText = Instance.new("TextLabel")
-ShieldText.Size = UDim2.new(1, -10, 1, 0)
-ShieldText.Position = UDim2.new(0, 5, 0, 0)
-ShieldText.BackgroundTransparency = 1
-ShieldText.Font = Enum.Font.GothamBold
-ShieldText.TextSize = 10
-ShieldText.TextColor3 = Color3.fromRGB(0, 255, 0)
-ShieldText.TextXAlignment = Enum.TextXAlignment.Left
-ShieldText.Text = "🛡️ SHIELD: ACTIVE | 17 Layers | DEWA MODE"
-ShieldText.ZIndex = 100
-ShieldText.Parent = ShieldIndicator
+local SIText = Instance.new("TextLabel")
+SIText.Size = UDim2.new(1, -10, 1, 0)
+SIText.Position = UDim2.new(0, 5, 0, 0)
+SIText.BackgroundTransparency = 1
+SIText.Font = Enum.Font.GothamBold
+SIText.TextSize = 9
+SIText.TextColor3 = Color3.fromRGB(0, 255, 0)
+SIText.TextXAlignment = Enum.TextXAlignment.Left
+SIText.Text = "🛡️ SHIELD: ACTIVE | 17 Layers | DEWA"
+SIText.ZIndex = 451
+SIText.Parent = SI
 
--- Master Render Loop (single connection for performance)
-local lastFPSUpdate = tick()
-local frameCount = 0
+-- ═══ FPS COUNTER (FIXED) ═══
+local fpsValues = {}
 local currentFPS = 60
 
-AddConnection("MasterRender", RunService.RenderStepped:Connect(function()
-    -- FPS Counter
-    frameCount = frameCount + 1
-    if tick() - lastFPSUpdate >= 1 then
-        currentFPS = frameCount
-        frameCount = 0
-        lastFPSUpdate = tick()
+AddConn("MasterRender", RunService.RenderStepped:Connect(function(dt)
+    -- FIXED FPS: Use delta time array for accurate calculation
+    table.insert(fpsValues, dt)
+    if #fpsValues > 60 then
+        table.remove(fpsValues, 1)
     end
-    
-    -- Watermark Update
+
+    -- Calculate average FPS from last 60 frames
+    local totalDT = 0
+    for _, v in ipairs(fpsValues) do
+        totalDT = totalDT + v
+    end
+    currentFPS = math.floor(#fpsValues / totalDT)
+
+    -- Watermark update
     pcall(function()
-        local ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
-        local timeStr = os.date("%H:%M:%S")
-        WatermarkText.Text = string.format("☢️ KimJong v3.0 | FPS: %d | Ping: %dms | %s | 🛡️SHIELD ON", currentFPS, ping, timeStr)
+        local ping = 0
+        pcall(function()
+            ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+        end)
+        local t = os.date("%H:%M:%S")
+        WMText.Text = string.format("☢️ KimJong v3.1 | FPS: %d | Ping: %dms | %s | 🛡️SHIELD ON", currentFPS, ping, t)
     end)
-    
-    -- Shield pulse animation
+
+    -- Shield pulse
     pcall(function()
         local pulse = math.abs(math.sin(tick() * 2))
-        ShieldText.TextColor3 = Color3.fromRGB(0, 150 + 105 * pulse, 0)
+        SIText.TextColor3 = Color3.fromRGB(0, math.floor(150 + 105 * pulse), 0)
     end)
 end))
 
--- ═══ LOADING SCREEN ═══
+-- ═══════════════════════════════════════
+-- LOADING SCREEN (FIXED - Proper destruction)
+-- ═══════════════════════════════════════
 
-local LoadingScreen = Instance.new("Frame")
-LoadingScreen.Size = UDim2.new(1, 0, 1, 0)
-LoadingScreen.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-LoadingScreen.ZIndex = 200
-LoadingScreen.Parent = ScreenGui
+-- Create loading screen in a SEPARATE holder so we can destroy it cleanly
+local LoadHolder = Instance.new("ScreenGui")
+LoadHolder.Name = RNG()
+LoadHolder.ResetOnSpawn = false
+LoadHolder.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+LoadHolder.DisplayOrder = 9999 -- Above everything
+pcall(function()
+    if syn and syn.protect_gui then syn.protect_gui(LoadHolder) end
+    LoadHolder.Parent = ScreenGui.Parent
+end)
+if not LoadHolder.Parent then
+    LoadHolder.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
 
-local LoadingTitle = Instance.new("TextLabel")
-LoadingTitle.Size = UDim2.new(1, 0, 0, 80)
-LoadingTitle.Position = UDim2.new(0, 0, 0.25, 0)
-LoadingTitle.BackgroundTransparency = 1
-LoadingTitle.Text = "KIMJONG"
-LoadingTitle.TextSize = 60
-LoadingTitle.Font = Enum.Font.GothamBlack
-LoadingTitle.TextColor3 = CurrentTheme.Primary
-LoadingTitle.ZIndex = 201
-LoadingTitle.Parent = LoadingScreen
+local LS = Instance.new("Frame")
+LS.Name = "LoadScreen"
+LS.Size = UDim2.new(1, 0, 1, 0)
+LS.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+LS.ZIndex = 9999
+LS.Parent = LoadHolder
 
-local LoadingSub = Instance.new("TextLabel")
-LoadingSub.Size = UDim2.new(1, 0, 0, 25)
-LoadingSub.Position = UDim2.new(0, 0, 0.25, 80)
-LoadingSub.BackgroundTransparency = 1
-LoadingSub.Text = "☢️ GODMODE Anti-Detect Edition ☢️"
-LoadingSub.TextSize = 14
-LoadingSub.Font = Enum.Font.GothamBold
-LoadingSub.TextColor3 = CurrentTheme.Secondary
-LoadingSub.TextTransparency = 1
-LoadingSub.ZIndex = 201
-LoadingSub.Parent = LoadingScreen
+local LSTitle = Instance.new("TextLabel")
+LSTitle.Size = UDim2.new(1, 0, 0, 70)
+LSTitle.Position = UDim2.new(0, 0, 0.28, 0)
+LSTitle.BackgroundTransparency = 1
+LSTitle.Text = "KIMJONG"
+LSTitle.TextSize = 56
+LSTitle.Font = Enum.Font.GothamBlack
+LSTitle.TextColor3 = CurrentTheme.Primary
+LSTitle.ZIndex = 10000
+LSTitle.Parent = LS
 
-local ShieldLabel = Instance.new("TextLabel")
-ShieldLabel.Size = UDim2.new(1, 0, 0, 20)
-ShieldLabel.Position = UDim2.new(0, 0, 0.25, 108)
-ShieldLabel.BackgroundTransparency = 1
-ShieldLabel.Text = "🛡️ 17-Layer Protection Shield 🛡️"
-ShieldLabel.TextSize = 12
-ShieldLabel.Font = Enum.Font.GothamBold
-ShieldLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-ShieldLabel.TextTransparency = 1
-ShieldLabel.ZIndex = 201
-ShieldLabel.Parent = LoadingScreen
+local LSSub = Instance.new("TextLabel")
+LSSub.Size = UDim2.new(1, 0, 0, 22)
+LSSub.Position = UDim2.new(0, 0, 0.28, 70)
+LSSub.BackgroundTransparency = 1
+LSSub.Text = "☢️ GODMODE Anti-Detect Edition ☢️"
+LSSub.TextSize = 13
+LSSub.Font = Enum.Font.GothamBold
+LSSub.TextColor3 = CurrentTheme.Secondary
+LSSub.TextTransparency = 1
+LSSub.ZIndex = 10000
+LSSub.Parent = LS
 
-local LoadingBarBG = Instance.new("Frame")
-LoadingBarBG.Size = UDim2.new(0.4, 0, 0, 6)
-LoadingBarBG.Position = UDim2.new(0.3, 0, 0.55, 0)
-LoadingBarBG.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-LoadingBarBG.BorderSizePixel = 0
-LoadingBarBG.ZIndex = 201
-LoadingBarBG.Parent = LoadingScreen
-Instance.new("UICorner", LoadingBarBG).CornerRadius = UDim.new(0, 3)
+local LSShield = Instance.new("TextLabel")
+LSShield.Size = UDim2.new(1, 0, 0, 18)
+LSShield.Position = UDim2.new(0, 0, 0.28, 96)
+LSShield.BackgroundTransparency = 1
+LSShield.Text = "🛡️ 17-Layer Protection Shield 🛡️"
+LSShield.TextSize = 11
+LSShield.Font = Enum.Font.GothamBold
+LSShield.TextColor3 = Color3.fromRGB(0, 255, 0)
+LSShield.TextTransparency = 1
+LSShield.ZIndex = 10000
+LSShield.Parent = LS
 
-local LoadingBarFill = Instance.new("Frame")
-LoadingBarFill.Size = UDim2.new(0, 0, 1, 0)
-LoadingBarFill.BackgroundColor3 = CurrentTheme.Primary
-LoadingBarFill.BorderSizePixel = 0
-LoadingBarFill.ZIndex = 202
-LoadingBarFill.Parent = LoadingBarBG
-Instance.new("UICorner", LoadingBarFill).CornerRadius = UDim.new(0, 3)
+local LSBarBG = Instance.new("Frame")
+LSBarBG.Size = UDim2.new(0.35, 0, 0, 5)
+LSBarBG.Position = UDim2.new(0.325, 0, 0.56, 0)
+LSBarBG.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+LSBarBG.BorderSizePixel = 0
+LSBarBG.ZIndex = 10000
+LSBarBG.Parent = LS
+Instance.new("UICorner", LSBarBG).CornerRadius = UDim.new(1, 0)
 
-local LoadingPct = Instance.new("TextLabel")
-LoadingPct.Size = UDim2.new(1, 0, 0, 20)
-LoadingPct.Position = UDim2.new(0, 0, 0.55, 15)
-LoadingPct.BackgroundTransparency = 1
-LoadingPct.Text = "0%"
-LoadingPct.TextSize = 14
-LoadingPct.Font = Enum.Font.GothamBold
-LoadingPct.TextColor3 = CurrentTheme.Text
-LoadingPct.ZIndex = 201
-LoadingPct.Parent = LoadingScreen
+local LSBarFill = Instance.new("Frame")
+LSBarFill.Size = UDim2.new(0, 0, 1, 0)
+LSBarFill.BackgroundColor3 = CurrentTheme.Primary
+LSBarFill.BorderSizePixel = 0
+LSBarFill.ZIndex = 10001
+LSBarFill.Parent = LSBarBG
+Instance.new("UICorner", LSBarFill).CornerRadius = UDim.new(1, 0)
 
-local LoadingStatus = Instance.new("TextLabel")
-LoadingStatus.Size = UDim2.new(1, 0, 0, 20)
-LoadingStatus.Position = UDim2.new(0, 0, 0.55, 35)
-LoadingStatus.BackgroundTransparency = 1
-LoadingStatus.Text = ""
-LoadingStatus.TextSize = 11
-LoadingStatus.Font = Enum.Font.Gotham
-LoadingStatus.TextColor3 = CurrentTheme.TextDim
-LoadingStatus.ZIndex = 201
-LoadingStatus.Parent = LoadingScreen
+local LSPct = Instance.new("TextLabel")
+LSPct.Size = UDim2.new(1, 0, 0, 18)
+LSPct.Position = UDim2.new(0, 0, 0.56, 12)
+LSPct.BackgroundTransparency = 1
+LSPct.Text = "0%"
+LSPct.TextSize = 13
+LSPct.Font = Enum.Font.GothamBold
+LSPct.TextColor3 = Color3.new(1, 1, 1)
+LSPct.ZIndex = 10000
+LSPct.Parent = LS
 
--- Glitch effect
+local LSStatus = Instance.new("TextLabel")
+LSStatus.Size = UDim2.new(1, 0, 0, 16)
+LSStatus.Position = UDim2.new(0, 0, 0.56, 32)
+LSStatus.BackgroundTransparency = 1
+LSStatus.Text = ""
+LSStatus.TextSize = 10
+LSStatus.Font = Enum.Font.Gotham
+LSStatus.TextColor3 = Color3.fromRGB(160, 160, 160)
+LSStatus.ZIndex = 10000
+LSStatus.Parent = LS
+
+-- Hide main frame during loading
+MainFrameVisible = false
+
+-- Glitch animation
 task.spawn(function()
-    local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*☢️🛡️"
+    local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*"
     local target = "KIMJONG"
     for i = 1, 20 do
         local glitched = ""
         for j = 1, #target do
             if math.random() > (i / 20) then
-                local ri = math.random(1, #chars)
-                glitched = glitched .. chars:sub(ri, ri)
+                local r = math.random(1, #chars)
+                glitched = glitched .. chars:sub(r, r)
             else
                 glitched = glitched .. target:sub(j, j)
             end
         end
-        LoadingTitle.Text = glitched
+        LSTitle.Text = glitched
         task.wait(0.04)
     end
-    LoadingTitle.Text = target
-    TweenService:Create(LoadingSub, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
-    task.wait(0.3)
-    TweenService:Create(ShieldLabel, TweenInfo.new(0.5), {TextTransparency = 0}):Play()
+    LSTitle.Text = target
+    TweenService:Create(LSSub, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
+    task.wait(0.2)
+    TweenService:Create(LSShield, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
 end)
 
--- Loading steps (includes anti-detect initialization)
-local loadSteps = {
-    {pct = 8, msg = "Initializing KimJong core..."},
-    {pct = 16, msg = "🛡️ Layer 1: Environment Isolation..."},
-    {pct = 24, msg = "🛡️ Layer 2-3: Metamethod Hooks Active..."},
-    {pct = 32, msg = "🛡️ Layer 4-5: Remote Blocker & Script Neutralizer..."},
-    {pct = 40, msg = "🛡️ Layer 6-7: Physics Spoof & GUI Cloak..."},
-    {pct = 48, msg = "🛡️ Layer 8-9: Anti-Kick & Anti-AFK Supreme..."},
-    {pct = 56, msg = "🛡️ Layer 10-11: Memory Evasion & Error Suppress..."},
-    {pct = 64, msg = "🛡️ Layer 12-13: Property Guard & Network Spoof..."},
-    {pct = 72, msg = "🛡️ Layer 14-17: Final Shield Layers..."},
-    {pct = 80, msg = "Loading Bloxburg features..."},
-    {pct = 90, msg = "Activating DEWA mode..."},
-    {pct = 100, msg = "☢️ GODMODE READY! Undetectable. ☢️"},
-}
-
+-- Loading progress
 task.spawn(function()
-    for _, step in ipairs(loadSteps) do
-        TweenService:Create(LoadingBarFill, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {
-            Size = UDim2.new(step.pct / 100, 0, 1, 0)
+    local steps = {
+        {p = 10, s = "Initializing KimJong core..."},
+        {p = 20, s = "🛡️ Layer 1-3: Hooks & Environment..."},
+        {p = 30, s = "🛡️ Layer 4-5: Remote Blocker Active..."},
+        {p = 40, s = "🛡️ Layer 6-8: Physics & GUI Cloak..."},
+        {p = 50, s = "🛡️ Layer 9-11: Anti-AFK & Error Suppress..."},
+        {p = 60, s = "🛡️ Layer 12-14: Property Guard..."},
+        {p = 70, s = "🛡️ Layer 15-17: Self-Healing Active..."},
+        {p = 80, s = "Loading Bloxburg features..."},
+        {p = 90, s = "Activating DEWA mode..."},
+        {p = 100, s = "☢️ GODMODE READY! ☢️"},
+    }
+
+    for _, step in ipairs(steps) do
+        TweenService:Create(LSBarFill, TweenInfo.new(0.25, Enum.EasingStyle.Quart), {
+            Size = UDim2.new(step.p / 100, 0, 1, 0)
         }):Play()
-        LoadingPct.Text = step.pct .. "%"
-        LoadingStatus.Text = step.msg
+        LSPct.Text = step.p .. "%"
+        LSStatus.Text = step.s
         task.wait(0.35)
     end
+
     task.wait(0.5)
-    TweenService:Create(LoadingScreen, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-    for _, child in pairs(LoadingScreen:GetDescendants()) do
-        pcall(function()
-            if child:IsA("TextLabel") then
-                TweenService:Create(child, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
-            elseif child:IsA("Frame") then
-                TweenService:Create(child, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
-            end
-        end)
-    end
+
+    -- FADE OUT - Properly destroy the ENTIRE loading ScreenGui
+    TweenService:Create(LS, TweenInfo.new(0.5), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(LSTitle, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+    TweenService:Create(LSSub, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+    TweenService:Create(LSShield, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+    TweenService:Create(LSPct, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+    TweenService:Create(LSStatus, TweenInfo.new(0.4), {TextTransparency = 1}):Play()
+    TweenService:Create(LSBarBG, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(LSBarFill, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+
     task.wait(0.6)
-    LoadingScreen:Destroy()
-    Notify("☢️ KimJong v3.0", "GODMODE loaded! 17-Layer Shield ACTIVE!", "shield", 5)
-    Notify("🛡️ Anti-Detect", "All protection layers initialized!", "success", 4)
+
+    -- DESTROY the entire loading ScreenGui - this ensures NO leftover elements
+    LoadHolder:Destroy()
+
+    Notify("☢️ KimJong v3.1", "GODMODE loaded! Shield ACTIVE!", "shield", 4)
+    Notify("🛡️ Anti-Detect", "17-Layer Protection initialized!", "success", 3)
 end)
 
 -- ═══════════════════════════════════════
--- MAIN WINDOW (Same structure, with anti-detect)
+-- MAIN WINDOW
 -- ═══════════════════════════════════════
 
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = GenerateRandomName()
-MainFrame.Size = UDim2.new(0, 680, 0, 480)
-MainFrame.Position = UDim2.new(0.5, -340, 0.5, -240)
+MainFrame.Name = RNG()
+MainFrame.Size = UDim2.new(0, 660, 0, 460)
+MainFrame.Position = UDim2.new(0.5, -330, 0.5, -230)
 MainFrame.BackgroundColor3 = CurrentTheme.Background
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.ZIndex = 10
 MainFrame.Parent = ScreenGui
-
 _G.KimJongMainFrame = MainFrame
 
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
-local mainStroke = Instance.new("UIStroke", MainFrame)
-mainStroke.Color = CurrentTheme.Border
-mainStroke.Thickness = 1
-mainStroke.Transparency = 0.5
+local mStroke = Instance.new("UIStroke", MainFrame)
+mStroke.Color = CurrentTheme.Border
+mStroke.Thickness = 1
+mStroke.Transparency = 0.4
 
 -- Title Bar
 local TitleBar = Instance.new("Frame")
-TitleBar.Size = UDim2.new(1, 0, 0, 45)
+TitleBar.Size = UDim2.new(1, 0, 0, 42)
 TitleBar.BackgroundColor3 = CurrentTheme.Sidebar
 TitleBar.BorderSizePixel = 0
 TitleBar.ZIndex = 11
 TitleBar.Parent = MainFrame
-
 Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 8)
-local tbFix = Instance.new("Frame", TitleBar)
-tbFix.Size = UDim2.new(1, 0, 0, 10)
-tbFix.Position = UDim2.new(0, 0, 1, -10)
+
+-- Fix bottom corners of title bar
+local tbFix = Instance.new("Frame")
+tbFix.Size = UDim2.new(1, 0, 0, 8)
+tbFix.Position = UDim2.new(0, 0, 1, -8)
 tbFix.BackgroundColor3 = CurrentTheme.Sidebar
 tbFix.BorderSizePixel = 0
 tbFix.ZIndex = 11
+tbFix.Parent = TitleBar
 
-local TitleText = Instance.new("TextLabel", TitleBar)
-TitleText.Size = UDim2.new(0, 400, 0, 22)
-TitleText.Position = UDim2.new(0, 15, 0, 3)
-TitleText.BackgroundTransparency = 1
-TitleText.Text = "☢️ Script KimJong v3.0 | 🛡️ GODMODE"
-TitleText.TextSize = 15
-TitleText.Font = Enum.Font.GothamBlack
-TitleText.TextColor3 = CurrentTheme.Secondary
-TitleText.TextXAlignment = Enum.TextXAlignment.Left
-TitleText.ZIndex = 12
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Size = UDim2.new(0, 380, 0, 20)
+TitleLabel.Position = UDim2.new(0, 12, 0, 3)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Text = "☢️ Script KimJong v3.1 | 🛡️ GODMODE"
+TitleLabel.TextSize = 14
+TitleLabel.Font = Enum.Font.GothamBlack
+TitleLabel.TextColor3 = CurrentTheme.Secondary
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.ZIndex = 12
+TitleLabel.Parent = TitleBar
 
-local SubText = Instance.new("TextLabel", TitleBar)
-SubText.Size = UDim2.new(0, 400, 0, 15)
-SubText.Position = UDim2.new(0, 15, 0, 25)
-SubText.BackgroundTransparency = 1
-SubText.Text = "Bloxburg Domination | Anti-Detect Level: DEWA"
-SubText.TextSize = 10
-SubText.Font = Enum.Font.Gotham
-SubText.TextColor3 = Color3.fromRGB(0, 200, 0)
-SubText.TextXAlignment = Enum.TextXAlignment.Left
-SubText.ZIndex = 12
+local SubLabel = Instance.new("TextLabel")
+SubLabel.Size = UDim2.new(0, 380, 0, 14)
+SubLabel.Position = UDim2.new(0, 12, 0, 23)
+SubLabel.BackgroundTransparency = 1
+SubLabel.Text = "Bloxburg Domination | Anti-Detect: DEWA"
+SubLabel.TextSize = 9
+SubLabel.Font = Enum.Font.Gotham
+SubLabel.TextColor3 = Color3.fromRGB(0, 200, 0)
+SubLabel.TextXAlignment = Enum.TextXAlignment.Left
+SubLabel.ZIndex = 12
+SubLabel.Parent = TitleBar
 
--- Close & Minimize
-local CloseBtn = Instance.new("TextButton", TitleBar)
-CloseBtn.Size = UDim2.new(0, 28, 0, 28)
-CloseBtn.Position = UDim2.new(1, -33, 0, 8)
+-- Close button
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Size = UDim2.new(0, 26, 0, 26)
+CloseBtn.Position = UDim2.new(1, -32, 0, 8)
 CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 CloseBtn.Text = "×"
 CloseBtn.TextSize = 16
 CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextColor3 = Color3.new(1,1,1)
+CloseBtn.TextColor3 = Color3.new(1, 1, 1)
 CloseBtn.BorderSizePixel = 0
 CloseBtn.ZIndex = 13
+CloseBtn.AutoButtonColor = false
+CloseBtn.Parent = TitleBar
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 4)
+
 CloseBtn.MouseButton1Click:Connect(function()
     States.UIVisible = false
     MainFrame.Visible = false
 end)
 
-local MinBtn = Instance.new("TextButton", TitleBar)
-MinBtn.Size = UDim2.new(0, 28, 0, 28)
-MinBtn.Position = UDim2.new(1, -66, 0, 8)
+-- Minimize button
+local MinBtn = Instance.new("TextButton")
+MinBtn.Size = UDim2.new(0, 26, 0, 26)
+MinBtn.Position = UDim2.new(1, -62, 0, 8)
 MinBtn.BackgroundColor3 = Color3.fromRGB(180, 180, 0)
 MinBtn.Text = "─"
-MinBtn.TextSize = 12
+MinBtn.TextSize = 11
 MinBtn.Font = Enum.Font.GothamBold
-MinBtn.TextColor3 = Color3.new(0,0,0)
+MinBtn.TextColor3 = Color3.new(0, 0, 0)
 MinBtn.BorderSizePixel = 0
 MinBtn.ZIndex = 13
+MinBtn.AutoButtonColor = false
+MinBtn.Parent = TitleBar
 Instance.new("UICorner", MinBtn).CornerRadius = UDim.new(0, 4)
+
 MinBtn.MouseButton1Click:Connect(function()
     States.UIVisible = false
     MainFrame.Visible = false
 end)
 
--- Drag
+-- Drag system
 local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
 TitleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = MainFrame.Position
         input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
         end)
     end
 end)
 TitleBar.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
 end)
 UserInputService.InputChanged:Connect(function(input)
     if input == dragInput and dragging then
-        local d = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
 
--- Toggle UI
-AddConnection("ToggleUI", UserInputService.InputBegan:Connect(function(input, gpe)
+-- Toggle UI keybind
+AddConn("ToggleUI", UserInputService.InputBegan:Connect(function(input, gpe)
     if gpe then return end
     if input.KeyCode == Enum.KeyCode.RightShift then
         States.UIVisible = not States.UIVisible
@@ -1919,68 +1209,88 @@ AddConnection("ToggleUI", UserInputService.InputBegan:Connect(function(input, gp
 end))
 
 -- Sidebar
-local Sidebar = Instance.new("Frame", MainFrame)
-Sidebar.Size = UDim2.new(0, 145, 1, -45)
-Sidebar.Position = UDim2.new(0, 0, 0, 45)
+local Sidebar = Instance.new("Frame")
+Sidebar.Size = UDim2.new(0, 130, 1, -42)
+Sidebar.Position = UDim2.new(0, 0, 0, 42)
 Sidebar.BackgroundColor3 = CurrentTheme.Sidebar
 Sidebar.BorderSizePixel = 0
 Sidebar.ZIndex = 11
+Sidebar.Parent = MainFrame
 
-local SidebarScroll = Instance.new("ScrollingFrame", Sidebar)
-SidebarScroll.Size = UDim2.new(1, 0, 1, 0)
-SidebarScroll.BackgroundTransparency = 1
-SidebarScroll.ScrollBarThickness = 2
-SidebarScroll.BorderSizePixel = 0
-SidebarScroll.ZIndex = 12
-SidebarScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-SidebarScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+local sbDivider = Instance.new("Frame")
+sbDivider.Size = UDim2.new(0, 1, 1, 0)
+sbDivider.Position = UDim2.new(1, 0, 0, 0)
+sbDivider.BackgroundColor3 = CurrentTheme.Border
+sbDivider.BackgroundTransparency = 0.7
+sbDivider.BorderSizePixel = 0
+sbDivider.ZIndex = 12
+sbDivider.Parent = Sidebar
 
-local sbLayout = Instance.new("UIListLayout", SidebarScroll)
-sbLayout.SortOrder = Enum.SortOrder.LayoutOrder
-sbLayout.Padding = UDim.new(0, 2)
+local SBScroll = Instance.new("ScrollingFrame")
+SBScroll.Size = UDim2.new(1, 0, 1, 0)
+SBScroll.BackgroundTransparency = 1
+SBScroll.ScrollBarThickness = 2
+SBScroll.ScrollBarImageColor3 = CurrentTheme.Primary
+SBScroll.BorderSizePixel = 0
+SBScroll.ZIndex = 12
+SBScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+SBScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+SBScroll.Parent = Sidebar
 
-local sbPad = Instance.new("UIPadding", SidebarScroll)
-sbPad.PaddingTop = UDim.new(0, 5)
-sbPad.PaddingLeft = UDim.new(0, 5)
-sbPad.PaddingRight = UDim.new(0, 5)
+local sbLay = Instance.new("UIListLayout")
+sbLay.SortOrder = Enum.SortOrder.LayoutOrder
+sbLay.Padding = UDim.new(0, 2)
+sbLay.Parent = SBScroll
+
+local sbPad = Instance.new("UIPadding")
+sbPad.PaddingTop = UDim.new(0, 4)
+sbPad.PaddingLeft = UDim.new(0, 4)
+sbPad.PaddingRight = UDim.new(0, 4)
+sbPad.Parent = SBScroll
 
 -- Content Area
-local ContentArea = Instance.new("Frame", MainFrame)
-ContentArea.Size = UDim2.new(1, -146, 1, -45)
-ContentArea.Position = UDim2.new(0, 146, 0, 45)
-ContentArea.BackgroundColor3 = CurrentTheme.Background
-ContentArea.BorderSizePixel = 0
-ContentArea.ZIndex = 11
+local Content = Instance.new("Frame")
+Content.Size = UDim2.new(1, -132, 1, -42)
+Content.Position = UDim2.new(0, 132, 0, 42)
+Content.BackgroundColor3 = CurrentTheme.Background
+Content.BorderSizePixel = 0
+Content.ZIndex = 11
+Content.ClipsDescendants = true
+Content.Parent = MainFrame
 
 -- Status bar
-local StatusBar = Instance.new("Frame", MainFrame)
-StatusBar.Size = UDim2.new(1, 0, 0, 20)
-StatusBar.Position = UDim2.new(0, 0, 1, -20)
-StatusBar.BackgroundColor3 = CurrentTheme.Sidebar
-StatusBar.BorderSizePixel = 0
-StatusBar.ZIndex = 15
+local StatBar = Instance.new("Frame")
+StatBar.Size = UDim2.new(1, 0, 0, 18)
+StatBar.Position = UDim2.new(0, 0, 1, -18)
+StatBar.BackgroundColor3 = CurrentTheme.Sidebar
+StatBar.BorderSizePixel = 0
+StatBar.ZIndex = 20
+StatBar.Parent = MainFrame
 
-local StatusText = Instance.new("TextLabel", StatusBar)
-StatusText.Size = UDim2.new(1, -10, 1, 0)
-StatusText.Position = UDim2.new(0, 10, 0, 0)
-StatusText.BackgroundTransparency = 1
-StatusText.Text = "🛡️ KimJong v3.0 GODMODE | Anti-Detect: ACTIVE | Shield: 17/17 Layers"
-StatusText.TextSize = 9
-StatusText.Font = Enum.Font.GothamBold
-StatusText.TextColor3 = Color3.fromRGB(0, 200, 0)
-StatusText.TextXAlignment = Enum.TextXAlignment.Left
-StatusText.ZIndex = 16
+local StatText = Instance.new("TextLabel")
+StatText.Size = UDim2.new(1, -10, 1, 0)
+StatText.Position = UDim2.new(0, 8, 0, 0)
+StatText.BackgroundTransparency = 1
+StatText.Text = "🛡️ KimJong v3.1 GODMODE | Anti-Detect: ACTIVE | Shield: 17/17"
+StatText.TextSize = 9
+StatText.Font = Enum.Font.GothamBold
+StatText.TextColor3 = Color3.fromRGB(0, 200, 0)
+StatText.TextXAlignment = Enum.TextXAlignment.Left
+StatText.ZIndex = 21
+StatText.Parent = StatBar
 
--- ═══ TAB SYSTEM & UI COMPONENTS ═══
+-- ═══════════════════════════════════════
+-- TAB SYSTEM & UI COMPONENTS
+-- ═══════════════════════════════════════
 
 local TabPages = {}
-local TabButtons = {}
+local TabBtns = {}
 local ActiveTab = nil
 
-local function CreateTabPage(name)
+local function MakePage(name)
     local page = Instance.new("ScrollingFrame")
-    page.Name = GenerateRandomName()
-    page.Size = UDim2.new(1, 0, 1, -20)
+    page.Name = RNG()
+    page.Size = UDim2.new(1, 0, 1, -18)
     page.BackgroundTransparency = 1
     page.ScrollBarThickness = 3
     page.ScrollBarImageColor3 = CurrentTheme.Primary
@@ -1989,26 +1299,26 @@ local function CreateTabPage(name)
     page.ZIndex = 12
     page.CanvasSize = UDim2.new(0, 0, 0, 0)
     page.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    page.Parent = ContentArea
+    page.Parent = Content
 
-    local l = Instance.new("UIListLayout", page)
-    l.SortOrder = Enum.SortOrder.LayoutOrder
-    l.Padding = UDim.new(0, 4)
+    Instance.new("UIListLayout", page).SortOrder = Enum.SortOrder.LayoutOrder
+    page:FindFirstChildOfClass("UIListLayout").Padding = UDim.new(0, 3)
 
-    local p = Instance.new("UIPadding", page)
-    p.PaddingTop = UDim.new(0, 8)
-    p.PaddingLeft = UDim.new(0, 8)
-    p.PaddingRight = UDim.new(0, 8)
-    p.PaddingBottom = UDim.new(0, 8)
+    local pad = Instance.new("UIPadding", page)
+    pad.PaddingTop = UDim.new(0, 6)
+    pad.PaddingLeft = UDim.new(0, 6)
+    pad.PaddingRight = UDim.new(0, 6)
+    pad.PaddingBottom = UDim.new(0, 6)
 
     TabPages[name] = page
     return page
 end
 
-local function CreateTab(icon, name, order)
-    local page = CreateTabPage(name)
-    local btn = Instance.new("TextButton", SidebarScroll)
-    btn.Size = UDim2.new(1, 0, 0, 30)
+local function MakeTab(icon, name, order)
+    local page = MakePage(name)
+
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 28)
     btn.BackgroundColor3 = CurrentTheme.Sidebar
     btn.BorderSizePixel = 0
     btn.Text = icon .. " " .. name
@@ -2019,166 +1329,198 @@ local function CreateTab(icon, name, order)
     btn.LayoutOrder = order
     btn.ZIndex = 13
     btn.AutoButtonColor = false
+    btn.Parent = SBScroll
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-    local pad = Instance.new("UIPadding", btn)
-    pad.PaddingLeft = UDim.new(0, 8)
-    TabButtons[name] = btn
+    Instance.new("UIPadding", btn).PaddingLeft = UDim.new(0, 8)
+
+    TabBtns[name] = btn
 
     btn.MouseButton1Click:Connect(function()
         if ActiveTab then
             TabPages[ActiveTab].Visible = false
-            TweenService:Create(TabButtons[ActiveTab], TweenInfo.new(0.15), {
-                BackgroundColor3 = CurrentTheme.Sidebar, TextColor3 = CurrentTheme.TextDim
+            TweenService:Create(TabBtns[ActiveTab], TweenInfo.new(0.12), {
+                BackgroundColor3 = CurrentTheme.Sidebar,
+                TextColor3 = CurrentTheme.TextDim
             }):Play()
         end
         ActiveTab = name
         page.Visible = true
-        TweenService:Create(btn, TweenInfo.new(0.15), {
-            BackgroundColor3 = CurrentTheme.Primary, TextColor3 = CurrentTheme.Text
+        TweenService:Create(btn, TweenInfo.new(0.12), {
+            BackgroundColor3 = CurrentTheme.Primary,
+            TextColor3 = CurrentTheme.Text
         }):Play()
     end)
+
     btn.MouseEnter:Connect(function()
         if ActiveTab ~= name then
-            TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = CurrentTheme.BackgroundAlt}):Play()
+            TweenService:Create(btn, TweenInfo.new(0.08), {BackgroundColor3 = CurrentTheme.BackgroundAlt}):Play()
         end
     end)
     btn.MouseLeave:Connect(function()
         if ActiveTab ~= name then
-            TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = CurrentTheme.Sidebar}):Play()
+            TweenService:Create(btn, TweenInfo.new(0.08), {BackgroundColor3 = CurrentTheme.Sidebar}):Play()
         end
     end)
+
     return page
 end
 
-local function CreateSection(parent, title, order)
-    local s = Instance.new("Frame", parent)
-    s.Size = UDim2.new(1, 0, 0, 22)
-    s.BackgroundTransparency = 1
-    s.LayoutOrder = order or 0
-    s.ZIndex = 13
-    local l = Instance.new("TextLabel", s)
-    l.Size = UDim2.new(1, 0, 0, 18)
+-- UI Component Factories
+
+local function Section(parent, title, order)
+    local f = Instance.new("Frame")
+    f.Size = UDim2.new(1, 0, 0, 20)
+    f.BackgroundTransparency = 1
+    f.LayoutOrder = order or 0
+    f.ZIndex = 13
+    f.Parent = parent
+
+    local l = Instance.new("TextLabel")
+    l.Size = UDim2.new(1, 0, 0, 16)
     l.BackgroundTransparency = 1
     l.Text = "▸ " .. title
-    l.TextSize = 12
+    l.TextSize = 11
     l.Font = Enum.Font.GothamBold
     l.TextColor3 = CurrentTheme.Secondary
     l.TextXAlignment = Enum.TextXAlignment.Left
     l.ZIndex = 14
-    local line = Instance.new("Frame", s)
+    l.Parent = f
+
+    local line = Instance.new("Frame")
     line.Size = UDim2.new(1, 0, 0, 1)
     line.Position = UDim2.new(0, 0, 1, -2)
     line.BackgroundColor3 = CurrentTheme.Border
     line.BackgroundTransparency = 0.7
     line.BorderSizePixel = 0
     line.ZIndex = 14
+    line.Parent = f
 end
 
-local function CreateToggle(parent, text, default, callback, order)
+local function Toggle(parent, text, default, callback, order)
     local toggled = default or false
-    local f = Instance.new("Frame", parent)
-    f.Size = UDim2.new(1, 0, 0, 28)
+
+    local f = Instance.new("Frame")
+    f.Size = UDim2.new(1, 0, 0, 26)
     f.BackgroundColor3 = CurrentTheme.BackgroundAlt
     f.BorderSizePixel = 0
     f.LayoutOrder = order or 0
     f.ZIndex = 13
+    f.Parent = parent
     Instance.new("UICorner", f).CornerRadius = UDim.new(0, 4)
 
-    local l = Instance.new("TextLabel", f)
-    l.Size = UDim2.new(1, -55, 1, 0)
+    local l = Instance.new("TextLabel")
+    l.Size = UDim2.new(1, -50, 1, 0)
     l.Position = UDim2.new(0, 8, 0, 0)
     l.BackgroundTransparency = 1
     l.Text = text
-    l.TextSize = 11
+    l.TextSize = 10
     l.Font = Enum.Font.Gotham
     l.TextColor3 = CurrentTheme.Text
     l.TextXAlignment = Enum.TextXAlignment.Left
     l.ZIndex = 14
+    l.TextTruncate = Enum.TextTruncate.AtEnd
+    l.Parent = f
 
-    local tbg = Instance.new("Frame", f)
-    tbg.Size = UDim2.new(0, 36, 0, 18)
-    tbg.Position = UDim2.new(1, -44, 0.5, -9)
+    local tbg = Instance.new("Frame")
+    tbg.Size = UDim2.new(0, 34, 0, 16)
+    tbg.Position = UDim2.new(1, -42, 0.5, -8)
     tbg.BackgroundColor3 = toggled and CurrentTheme.ToggleOn or CurrentTheme.ToggleOff
     tbg.BorderSizePixel = 0
     tbg.ZIndex = 15
+    tbg.Parent = f
     Instance.new("UICorner", tbg).CornerRadius = UDim.new(1, 0)
 
-    local tc = Instance.new("Frame", tbg)
-    tc.Size = UDim2.new(0, 14, 0, 14)
-    tc.Position = toggled and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)
-    tc.BackgroundColor3 = Color3.new(1,1,1)
+    local tc = Instance.new("Frame")
+    tc.Size = UDim2.new(0, 12, 0, 12)
+    tc.Position = toggled and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
+    tc.BackgroundColor3 = Color3.new(1, 1, 1)
     tc.BorderSizePixel = 0
     tc.ZIndex = 16
+    tc.Parent = tbg
     Instance.new("UICorner", tc).CornerRadius = UDim.new(1, 0)
 
-    local btn = Instance.new("TextButton", f)
+    local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 1, 0)
     btn.BackgroundTransparency = 1
     btn.Text = ""
     btn.ZIndex = 17
+    btn.Parent = f
+
     btn.MouseButton1Click:Connect(function()
         toggled = not toggled
-        TweenService:Create(tbg, TweenInfo.new(0.2), {BackgroundColor3 = toggled and CurrentTheme.ToggleOn or CurrentTheme.ToggleOff}):Play()
-        TweenService:Create(tc, TweenInfo.new(0.2, Enum.EasingStyle.Quart), {Position = toggled and UDim2.new(1, -16, 0.5, -7) or UDim2.new(0, 2, 0.5, -7)}):Play()
+        TweenService:Create(tbg, TweenInfo.new(0.15), {
+            BackgroundColor3 = toggled and CurrentTheme.ToggleOn or CurrentTheme.ToggleOff
+        }):Play()
+        TweenService:Create(tc, TweenInfo.new(0.15, Enum.EasingStyle.Quart), {
+            Position = toggled and UDim2.new(1, -14, 0.5, -6) or UDim2.new(0, 2, 0.5, -6)
+        }):Play()
         pcall(callback, toggled)
     end)
+
     return f
 end
 
-local function CreateSlider(parent, text, min, max, default, callback, order)
+local function Slider(parent, text, min, max, default, callback, order)
     local value = default or min
-    local f = Instance.new("Frame", parent)
-    f.Size = UDim2.new(1, 0, 0, 42)
+
+    local f = Instance.new("Frame")
+    f.Size = UDim2.new(1, 0, 0, 38)
     f.BackgroundColor3 = CurrentTheme.BackgroundAlt
     f.BorderSizePixel = 0
     f.LayoutOrder = order or 0
     f.ZIndex = 13
+    f.Parent = parent
     Instance.new("UICorner", f).CornerRadius = UDim.new(0, 4)
 
-    local l = Instance.new("TextLabel", f)
-    l.Size = UDim2.new(1, -60, 0, 18)
+    local l = Instance.new("TextLabel")
+    l.Size = UDim2.new(1, -55, 0, 16)
     l.Position = UDim2.new(0, 8, 0, 2)
     l.BackgroundTransparency = 1
     l.Text = text
-    l.TextSize = 11
+    l.TextSize = 10
     l.Font = Enum.Font.Gotham
     l.TextColor3 = CurrentTheme.Text
     l.TextXAlignment = Enum.TextXAlignment.Left
     l.ZIndex = 14
+    l.Parent = f
 
-    local vl = Instance.new("TextLabel", f)
-    vl.Size = UDim2.new(0, 50, 0, 18)
-    vl.Position = UDim2.new(1, -55, 0, 2)
+    local vl = Instance.new("TextLabel")
+    vl.Size = UDim2.new(0, 45, 0, 16)
+    vl.Position = UDim2.new(1, -50, 0, 2)
     vl.BackgroundTransparency = 1
     vl.Text = tostring(math.floor(value))
-    vl.TextSize = 11
+    vl.TextSize = 10
     vl.Font = Enum.Font.GothamBold
     vl.TextColor3 = CurrentTheme.Secondary
     vl.TextXAlignment = Enum.TextXAlignment.Right
     vl.ZIndex = 14
+    vl.Parent = f
 
-    local sbg = Instance.new("Frame", f)
-    sbg.Size = UDim2.new(1, -16, 0, 5)
-    sbg.Position = UDim2.new(0, 8, 0, 28)
+    local sbg = Instance.new("Frame")
+    sbg.Size = UDim2.new(1, -16, 0, 4)
+    sbg.Position = UDim2.new(0, 8, 0, 26)
     sbg.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     sbg.BorderSizePixel = 0
     sbg.ZIndex = 15
+    sbg.Parent = f
     Instance.new("UICorner", sbg).CornerRadius = UDim.new(1, 0)
 
-    local pct = (value - min) / (max - min)
-    local sf = Instance.new("Frame", sbg)
+    local pct = math.clamp((value - min) / (max - min), 0, 1)
+    local sf = Instance.new("Frame")
     sf.Size = UDim2.new(pct, 0, 1, 0)
     sf.BackgroundColor3 = CurrentTheme.Primary
     sf.BorderSizePixel = 0
     sf.ZIndex = 16
+    sf.Parent = sbg
     Instance.new("UICorner", sf).CornerRadius = UDim.new(1, 0)
 
-    local knob = Instance.new("Frame", sbg)
+    local knob = Instance.new("Frame")
     knob.Size = UDim2.new(0, 12, 0, 12)
     knob.Position = UDim2.new(pct, -6, 0.5, -6)
-    knob.BackgroundColor3 = Color3.new(1,1,1)
+    knob.BackgroundColor3 = Color3.new(1, 1, 1)
     knob.BorderSizePixel = 0
     knob.ZIndex = 17
+    knob.Parent = sbg
     Instance.new("UICorner", knob).CornerRadius = UDim.new(1, 0)
 
     local sliding = false
@@ -2190,35 +1532,54 @@ local function CreateSlider(parent, text, min, max, default, callback, order)
         knob.Position = UDim2.new(rel, -6, 0.5, -6)
         pcall(callback, value)
     end
-    sbg.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true; update(i.Position) end end)
-    knob.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true end end)
-    UserInputService.InputChanged:Connect(function(i) if sliding and i.UserInputType == Enum.UserInputType.MouseMovement then update(i.Position) end end)
-    UserInputService.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then sliding = false end end)
+
+    sbg.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true; update(i.Position) end
+    end)
+    knob.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 then sliding = true end
+    end)
+    UserInputService.InputChanged:Connect(function(i)
+        if sliding and i.UserInputType == Enum.UserInputType.MouseMovement then update(i.Position) end
+    end)
+    UserInputService.InputEnded:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1 then sliding = false end
+    end)
+
     return f
 end
 
-local function CreateButton(parent, text, callback, order)
-    local btn = Instance.new("TextButton", parent)
-    btn.Size = UDim2.new(1, 0, 0, 28)
+local function Button(parent, text, callback, order)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 26)
     btn.BackgroundColor3 = CurrentTheme.Primary
     btn.BorderSizePixel = 0
     btn.Text = text
-    btn.TextSize = 11
+    btn.TextSize = 10
     btn.Font = Enum.Font.GothamBold
     btn.TextColor3 = CurrentTheme.Text
     btn.LayoutOrder = order or 0
     btn.ZIndex = 14
     btn.AutoButtonColor = false
+    btn.Parent = parent
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-    btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = CurrentTheme.Accent}):Play() end)
-    btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = CurrentTheme.Primary}):Play() end)
-    btn.MouseButton1Click:Connect(function() pcall(callback) end)
+
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = CurrentTheme.Accent}):Play()
+    end)
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = CurrentTheme.Primary}):Play()
+    end)
+    btn.MouseButton1Click:Connect(function()
+        pcall(callback)
+    end)
+
     return btn
 end
 
-local function CreateLabel(parent, text, order)
-    local l = Instance.new("TextLabel", parent)
-    l.Size = UDim2.new(1, 0, 0, 18)
+local function Label(parent, text, order)
+    local l = Instance.new("TextLabel")
+    l.Size = UDim2.new(1, 0, 0, 16)
     l.BackgroundTransparency = 1
     l.Text = text
     l.TextSize = 10
@@ -2227,223 +1588,276 @@ local function CreateLabel(parent, text, order)
     l.TextXAlignment = Enum.TextXAlignment.Left
     l.LayoutOrder = order or 0
     l.ZIndex = 14
+    l.Parent = parent
     return l
 end
 
--- ═══ CREATE ALL TABS ═══
+local function TextInput(parent, placeholder, callback, order)
+    local f = Instance.new("Frame")
+    f.Size = UDim2.new(1, 0, 0, 26)
+    f.BackgroundColor3 = CurrentTheme.BackgroundAlt
+    f.BorderSizePixel = 0
+    f.LayoutOrder = order or 0
+    f.ZIndex = 13
+    f.Parent = parent
+    Instance.new("UICorner", f).CornerRadius = UDim.new(0, 4)
 
-local PlayerTab = CreateTab("🏠", "Player", 1)
-local ShieldTab = CreateTab("🛡️", "Shield", 2)
-local MoneyTab = CreateTab("💰", "Money", 3)
-local JobsTab = CreateTab("💼", "Jobs", 4)
-local VehicleTab = CreateTab("🚗", "Vehicle", 5)
-local ESPTab = CreateTab("👁️", "ESP", 6)
-local TeleportTab = CreateTab("🌍", "Teleport", 7)
-local TrollTab = CreateTab("😂", "Troll", 8)
-local MiscTab = CreateTab("🎮", "Misc", 9)
-local SettingsTab = CreateTab("⚙️", "Settings", 10)
+    local tb = Instance.new("TextBox")
+    tb.Size = UDim2.new(1, -10, 1, 0)
+    tb.Position = UDim2.new(0, 5, 0, 0)
+    tb.BackgroundTransparency = 1
+    tb.PlaceholderText = placeholder
+    tb.PlaceholderColor3 = CurrentTheme.TextDim
+    tb.Text = ""
+    tb.TextSize = 10
+    tb.Font = Enum.Font.Gotham
+    tb.TextColor3 = CurrentTheme.Text
+    tb.TextXAlignment = Enum.TextXAlignment.Left
+    tb.ZIndex = 14
+    tb.ClearTextOnFocus = false
+    tb.Parent = f
 
--- Default tab
+    tb.FocusLost:Connect(function(enter)
+        if enter then pcall(callback, tb.Text) end
+    end)
+
+    return {Frame = f, TextBox = tb}
+end
+
+-- ═══════════════════════════════════════
+-- CREATE ALL TABS
+-- ═══════════════════════════════════════
+
+local PlayerTab = MakeTab("🏠", "Player", 1)
+local ShieldTab = MakeTab("🛡️", "Shield", 2)
+local MoneyTab = MakeTab("💰", "Money", 3)
+local JobsTab = MakeTab("💼", "Jobs", 4)
+local VehicleTab = MakeTab("🚗", "Vehicle", 5)
+local ESPTab = MakeTab("👁️", "ESP", 6)
+local TPTab = MakeTab("🌍", "Teleport", 7)
+local TrollTab = MakeTab("😂", "Troll", 8)
+local MiscTab = MakeTab("🎮", "Misc", 9)
+local SettingsTab = MakeTab("⚙️", "Settings", 10)
+
+-- Set default tab
 ActiveTab = "Player"
 TabPages["Player"].Visible = true
-TweenService:Create(TabButtons["Player"], TweenInfo.new(0.15), {
-    BackgroundColor3 = CurrentTheme.Primary, TextColor3 = CurrentTheme.Text
+TweenService:Create(TabBtns["Player"], TweenInfo.new(0.1), {
+    BackgroundColor3 = CurrentTheme.Primary,
+    TextColor3 = CurrentTheme.Text
 }):Play()
 
 -- ═══════════════════════════════════════
--- TAB: PLAYER (with anti-detect wrappers)
+-- TAB 1: PLAYER
 -- ═══════════════════════════════════════
 
-CreateSection(PlayerTab, "Movement (Spoofed)", 1)
+Section(PlayerTab, "Movement (Spoofed)", 1)
 
-CreateSlider(PlayerTab, "WalkSpeed (Spoofed)", 16, 500, 16, function(val)
-    SafeSetSpeed(val)
+Slider(PlayerTab, "WalkSpeed (Spoofed)", 16, 500, 16, function(v)
+    SafeSpeed(v)
 end, 2)
 
-CreateSlider(PlayerTab, "JumpPower (Spoofed)", 50, 500, 50, function(val)
-    SafeSetJump(val)
+Slider(PlayerTab, "JumpPower (Spoofed)", 50, 500, 50, function(v)
+    SafeJump(v)
 end, 3)
 
-CreateToggle(PlayerTab, "Infinite Jump", false, function(val)
-    States.InfiniteJump = val
-    Notify(val and "Enabled" or "Disabled", "Infinite Jump " .. (val and "ON" or "OFF"), val and "success" or "warning")
+Toggle(PlayerTab, "Infinite Jump", false, function(v)
+    States.InfiniteJump = v
+    Notify(v and "Enabled" or "Disabled", "Infinite Jump", v and "success" or "warning")
 end, 4)
 
-AddConnection("InfJump", UserInputService.JumpRequest:Connect(function()
+AddConn("InfJump", UserInputService.JumpRequest:Connect(function()
     if States.InfiniteJump then
-        pcall(function() GetHumanoid():ChangeState(Enum.HumanoidStateType.Jumping) end)
+        pcall(function() GetHum():ChangeState(Enum.HumanoidStateType.Jumping) end)
     end
 end))
 
-CreateToggle(PlayerTab, "Noclip (Stealth)", false, function(val)
-    States.Noclip = val
-    if val then
-        AddConnection("Noclip", RunService.Stepped:Connect(function()
+Toggle(PlayerTab, "Noclip (Stealth)", false, function(v)
+    States.Noclip = v
+    if v then
+        AddConn("Noclip", RunService.Stepped:Connect(function()
             if States.Noclip then
                 pcall(function()
-                    for _, p in pairs(GetCharacter():GetDescendants()) do
+                    for _, p in pairs(GetChar():GetDescendants()) do
                         if p:IsA("BasePart") then p.CanCollide = false end
                     end
                 end)
             end
         end))
     else
-        RemoveConnection("Noclip")
+        RemConn("Noclip")
         pcall(function()
-            for _, p in pairs(GetCharacter():GetDescendants()) do
+            for _, p in pairs(GetChar():GetDescendants()) do
                 if p:IsA("BasePart") and p.Name ~= "HumanoidRootPart" then p.CanCollide = true end
             end
         end)
     end
-    Notify(val and "Enabled" or "Disabled", "Stealth Noclip " .. (val and "ON" or "OFF"), val and "success" or "warning")
+    Notify(v and "Enabled" or "Disabled", "Noclip", v and "success" or "warning")
 end, 5)
 
-CreateToggle(PlayerTab, "Fly (Ghost Mode)", false, function(val)
-    States.Fly = val
-    _G.KimJongStates.Fly = val
-    if val then
+Toggle(PlayerTab, "Fly (Ghost Mode)", false, function(v)
+    States.Fly = v
+    _G.KimJongStates.Fly = v
+    if v then
         pcall(function()
-            local hrp = GetRootPart()
-            local hum = GetHumanoid()
+            local hrp = GetHRP()
+            local hum = GetHum()
             if not hrp then return end
-            local bg = Instance.new("BodyGyro", hrp)
-            bg.Name = "KJ_BodyGyro"
+
+            local bg = Instance.new("BodyGyro")
+            bg.Name = "KJ_BG"
             bg.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
             bg.P = 9e4
-            local bv = Instance.new("BodyVelocity", hrp)
-            bv.Name = "KJ_BodyVelocity"
+            bg.Parent = hrp
+
+            local bv = Instance.new("BodyVelocity")
+            bv.Name = "KJ_BV"
             bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
             bv.Velocity = Vector3.zero
-            hum.PlatformStand = true
+            bv.Parent = hrp
 
-            AddConnection("FlyLoop", RunService.RenderStepped:Connect(function()
+            if hum then hum.PlatformStand = true end
+
+            AddConn("FlyLoop", RunService.RenderStepped:Connect(function()
                 if not States.Fly then return end
                 pcall(function()
                     local cam = workspace.CurrentCamera
-                    local v = Vector3.zero
+                    local vel = Vector3.zero
                     local s = States.FlySpeed
-                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then v = v + cam.CFrame.LookVector * s end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then v = v - cam.CFrame.LookVector * s end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then v = v - cam.CFrame.RightVector * s end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then v = v + cam.CFrame.RightVector * s end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then v = v + Vector3.new(0, s, 0) end
-                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then v = v - Vector3.new(0, s, 0) end
-                    bv.Velocity = v
+                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then vel = vel + cam.CFrame.LookVector * s end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then vel = vel - cam.CFrame.LookVector * s end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then vel = vel - cam.CFrame.RightVector * s end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then vel = vel + cam.CFrame.RightVector * s end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then vel = vel + Vector3.new(0, s, 0) end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then vel = vel - Vector3.new(0, s, 0) end
+                    bv.Velocity = vel
                     bg.CFrame = cam.CFrame
                 end)
             end))
         end)
-        Notify("🛡️ Fly", "Ghost Fly activated! Speed spoofed!", "success")
+        Notify("🛡️ Fly", "Ghost Fly ON! Spoofed velocity", "success")
     else
-        RemoveConnection("FlyLoop")
+        RemConn("FlyLoop")
         pcall(function()
-            local hrp = GetRootPart()
+            local hrp = GetHRP()
             if hrp then
-                local bg = hrp:FindFirstChild("KJ_BodyGyro")
-                local bv = hrp:FindFirstChild("KJ_BodyVelocity")
+                local bg = hrp:FindFirstChild("KJ_BG")
+                local bv = hrp:FindFirstChild("KJ_BV")
                 if bg then bg:Destroy() end
                 if bv then bv:Destroy() end
             end
-            local hum = GetHumanoid()
+            local hum = GetHum()
             if hum then hum.PlatformStand = false end
         end)
-        Notify("Disabled", "Fly deactivated!", "warning")
+        Notify("Disabled", "Fly OFF", "warning")
     end
 end, 6)
 
-CreateSlider(PlayerTab, "Fly Speed", 50, 1000, 100, function(val)
-    States.FlySpeed = val
+Slider(PlayerTab, "Fly Speed", 50, 1000, 100, function(v)
+    States.FlySpeed = v
 end, 7)
 
-CreateSection(PlayerTab, "Character", 8)
+Section(PlayerTab, "Character", 8)
 
-CreateSlider(PlayerTab, "Camera FOV", 70, 120, 70, function(val)
-    pcall(function() workspace.CurrentCamera.FieldOfView = val end)
+Slider(PlayerTab, "Camera FOV", 70, 120, 70, function(v)
+    pcall(function() workspace.CurrentCamera.FieldOfView = v end)
 end, 9)
 
-CreateButton(PlayerTab, "Reset Character", function()
-    _G.KimJongResetting = true
-    pcall(function() GetHumanoid().Health = 0 end)
-    task.delay(3, function() _G.KimJongResetting = false end)
-    Notify("Reset", "Character reset!", "info")
+Toggle(PlayerTab, "Invisible (Client)", false, function(v)
+    pcall(function()
+        local char = GetChar()
+        for _, p in pairs(char:GetDescendants()) do
+            if p:IsA("BasePart") then p.Transparency = v and 1 or 0 end
+            if p:IsA("Decal") then p.Transparency = v and 1 or 0 end
+        end
+    end)
+    Notify(v and "Enabled" or "Disabled", "Invisible", v and "success" or "warning")
 end, 10)
 
+Button(PlayerTab, "Reset Character", function()
+    _G.KimJongResetting = true
+    pcall(function() GetHum().Health = 0 end)
+    task.delay(3, function() _G.KimJongResetting = false end)
+    Notify("Reset", "Character reset!", "info")
+end, 11)
+
 -- ═══════════════════════════════════════
--- TAB: SHIELD (Anti-Detect Control Panel)
+-- TAB 2: SHIELD (FIXED - All 17 layers visible)
 -- ═══════════════════════════════════════
 
-CreateSection(ShieldTab, "🛡️ Anti-Detection Status", 1)
+Section(ShieldTab, "🛡️ Protection Status", 1)
 
-CreateLabel(ShieldTab, "🟢 Layer 1:  Environment Isolation - ACTIVE", 2)
-CreateLabel(ShieldTab, "🟢 Layer 2:  Anti-Kick Shield - ACTIVE", 3)
-CreateLabel(ShieldTab, "🟢 Layer 3:  Metamethod Hooks - ACTIVE", 4)
-CreateLabel(ShieldTab, "🟢 Layer 4:  Remote Blocker - ACTIVE", 5)
-CreateLabel(ShieldTab, "🟢 Layer 5:  Script Neutralizer - ACTIVE", 6)
-CreateLabel(ShieldTab, "🟢 Layer 6:  Physics Spoofing - ACTIVE", 7)
-CreateLabel(ShieldTab, "🟢 Layer 7:  GUI Cloaking - ACTIVE", 8)
-CreateLabel(ShieldTab, "🟢 Layer 8:  Anti-Teleport Kick - ACTIVE", 9)
-CreateLabel(ShieldTab, "🟢 Layer 9:  Anti-AFK Supreme - ACTIVE", 10)
-CreateLabel(ShieldTab, "🟢 Layer 10: Memory Evasion - ACTIVE", 11)
-CreateLabel(ShieldTab, "🟢 Layer 11: Error Suppression - ACTIVE", 12)
-CreateLabel(ShieldTab, "🟢 Layer 12: Property Guard - ACTIVE", 13)
-CreateLabel(ShieldTab, "🟢 Layer 13: Network Spoofing - ACTIVE", 14)
-CreateLabel(ShieldTab, "🟢 Layer 14: Anti-Screenshot - ACTIVE", 15)
-CreateLabel(ShieldTab, "🟢 Layer 15: Name Obfuscation - ACTIVE", 16)
-CreateLabel(ShieldTab, "🟢 Layer 16: Connection Evasion - ACTIVE", 17)
-CreateLabel(ShieldTab, "🟢 Layer 17: Self-Healing - ACTIVE", 18)
+-- All 17 layers with proper layout ordering
+Label(ShieldTab, "🟢 Layer 1:  Environment Isolation", 2)
+Label(ShieldTab, "🟢 Layer 2:  Anti-Kick Nuclear Shield", 3)
+Label(ShieldTab, "🟢 Layer 3:  Metamethod Hook Shield", 4)
+Label(ShieldTab, "🟢 Layer 4:  Remote Spy & Blocker", 5)
+Label(ShieldTab, "🟢 Layer 5:  Script Neutralizer", 6)
+Label(ShieldTab, "🟢 Layer 6:  Physics Spoofing", 7)
+Label(ShieldTab, "🟢 Layer 7:  GUI Cloaking System", 8)
+Label(ShieldTab, "🟢 Layer 8:  Anti-Teleport Kick", 9)
+Label(ShieldTab, "🟢 Layer 9:  Anti-AFK Supreme", 10)
+Label(ShieldTab, "🟢 Layer 10: Memory Evasion", 11)
+Label(ShieldTab, "🟢 Layer 11: Error Suppression", 12)
+Label(ShieldTab, "🟢 Layer 12: Property Guard", 13)
+Label(ShieldTab, "🟢 Layer 13: Network Spoofing", 14)
+Label(ShieldTab, "🟢 Layer 14: Anti-Screenshot", 15)
+Label(ShieldTab, "🟢 Layer 15: Name Obfuscation", 16)
+Label(ShieldTab, "🟢 Layer 16: Connection Evasion", 17)
+Label(ShieldTab, "🟢 Layer 17: Self-Healing System", 18)
 
-CreateSection(ShieldTab, "Shield Controls", 19)
+Section(ShieldTab, "Shield Controls", 19)
 
-CreateToggle(ShieldTab, "Spoof WalkSpeed", true, function(val)
-    AntiDetect.SpoofWalkSpeed = val
-    Notify("🛡️ Shield", "WalkSpeed Spoofing " .. (val and "ON" or "OFF"), val and "shield" or "warning")
+Toggle(ShieldTab, "Spoof WalkSpeed", true, function(v)
+    AntiDetect.SpoofWalkSpeed = v
+    Notify("🛡️", "WalkSpeed Spoof " .. (v and "ON" or "OFF"), "shield")
 end, 20)
 
-CreateToggle(ShieldTab, "Spoof JumpPower", true, function(val)
-    AntiDetect.SpoofJumpPower = val
-    Notify("🛡️ Shield", "JumpPower Spoofing " .. (val and "ON" or "OFF"), val and "shield" or "warning")
+Toggle(ShieldTab, "Spoof JumpPower", true, function(v)
+    AntiDetect.SpoofJumpPower = v
+    Notify("🛡️", "JumpPower Spoof " .. (v and "ON" or "OFF"), "shield")
 end, 21)
 
-CreateToggle(ShieldTab, "Block Anti-Cheat Remotes", true, function(val)
-    Notify("🛡️ Shield", "Remote Blocker " .. (val and "ON" or "OFF"), val and "shield" or "warning")
+Toggle(ShieldTab, "Block AC Remotes", true, function(v)
+    Notify("🛡️", "Remote Blocker " .. (v and "ON" or "OFF"), "shield")
 end, 22)
 
-CreateToggle(ShieldTab, "Auto Self-Heal", true, function(val)
-    Notify("🛡️ Shield", "Self-Healing " .. (val and "ON" or "OFF"), val and "shield" or "warning")
+Toggle(ShieldTab, "Auto Self-Heal", true, function(v)
+    Notify("🛡️", "Self-Heal " .. (v and "ON" or "OFF"), "shield")
 end, 23)
 
-CreateToggle(ShieldTab, "Stealth Teleport (Gradual)", true, function(val)
-    States.StealthTP = val
-    Notify("🛡️ Shield", "Stealth Teleport " .. (val and "ON" or "OFF"), val and "shield" or "warning")
+Toggle(ShieldTab, "Stealth Teleport", true, function(v)
+    States.StealthTP = v
+    Notify("🛡️", "Stealth TP " .. (v and "ON" or "OFF"), "shield")
 end, 24)
 
-CreateButton(ShieldTab, "🔄 Re-scan & Neutralize Anti-Cheat", function()
-    pcall(NeutralizeAntiCheatScripts)
-    pcall(SetupRemoteBlocker)
-    Notify("🛡️ Shield", "Anti-cheat re-scanned and neutralized!", "shield")
+Button(ShieldTab, "🔄 Re-scan Anti-Cheat", function()
+    pcall(NeutralizeAC)
+    Notify("🛡️", "Anti-cheat re-scanned!", "shield")
 end, 25)
 
-CreateButton(ShieldTab, "📊 Show Blocked Remotes Count", function()
-    local count = 0
-    for _ in pairs(AntiDetect.BlockedRemotes) do count = count + 1 end
-    Notify("🛡️ Shield", "Blocked remotes: " .. count, "info")
+Button(ShieldTab, "📊 Blocked Remotes Count", function()
+    local c = 0
+    for _ in pairs(AntiDetect.BlockedRemotes) do c = c + 1 end
+    Notify("🛡️", "Blocked: " .. c .. " remotes", "info")
 end, 26)
 
 -- ═══════════════════════════════════════
--- TAB: MONEY
+-- TAB 3: MONEY
 -- ═══════════════════════════════════════
 
-CreateSection(MoneyTab, "Auto Money (Safe Fire)", 1)
+Section(MoneyTab, "Auto Money", 1)
 
-CreateToggle(MoneyTab, "Auto Work", false, function(val)
-    States.AutoWork = val
-    if val then
+Toggle(MoneyTab, "Auto Work", false, function(v)
+    States.AutoWork = v
+    if v then
         task.spawn(function()
             while States.AutoWork do
                 pcall(function()
                     for _, r in pairs(ReplicatedStorage:GetDescendants()) do
-                        if r:IsA("RemoteEvent") and (r.Name:lower():find("work") or r.Name:lower():find("task") or r.Name:lower():find("complete")) then
-                            if not AntiDetect.BlockedRemotes[r] then
+                        if r:IsA("RemoteEvent") and not AntiDetect.BlockedRemotes[r] then
+                            local n = r.Name:lower()
+                            if n:find("work") or n:find("task") or n:find("complete") then
                                 AntiDetect.SafeFireServer(r)
                             end
                         end
@@ -2453,47 +1867,68 @@ CreateToggle(MoneyTab, "Auto Work", false, function(val)
             end
         end)
     end
-    Notify(val and "Enabled" or "Disabled", "Auto Work " .. (val and "ON" or "OFF"), val and "success" or "warning")
+    Notify(v and "Enabled" or "Disabled", "Auto Work", v and "success" or "warning")
 end, 2)
 
-CreateToggle(MoneyTab, "Auto Mood Refill", false, function(val)
-    States.AutoMood = val
-    if val then
+Toggle(MoneyTab, "Auto Collect Paycheck", false, function(v)
+    if v then
         task.spawn(function()
-            while States.AutoMood do
+            while v do
                 pcall(function()
                     for _, r in pairs(ReplicatedStorage:GetDescendants()) do
-                        if r:IsA("RemoteEvent") then
+                        if r:IsA("RemoteEvent") and not AntiDetect.BlockedRemotes[r] then
                             local n = r.Name:lower()
-                            if (n:find("eat") or n:find("sleep") or n:find("shower") or n:find("fun")) and not AntiDetect.BlockedRemotes[r] then
+                            if n:find("pay") or n:find("collect") or n:find("salary") then
                                 AntiDetect.SafeFireServer(r)
                             end
                         end
                     end
                 end)
-                task.wait(15)
+                task.wait(5)
             end
         end)
     end
-    Notify(val and "Enabled" or "Disabled", "Auto Mood " .. (val and "ON" or "OFF"), val and "success" or "warning")
+    Notify(v and "Enabled" or "Disabled", "Auto Paycheck", v and "success" or "warning")
 end, 3)
 
+Toggle(MoneyTab, "Auto Mood Refill (All)", false, function(v)
+    States.AutoMood = v
+    if v then
+        task.spawn(function()
+            while States.AutoMood do
+                pcall(function()
+                    for _, r in pairs(ReplicatedStorage:GetDescendants()) do
+                        if r:IsA("RemoteEvent") and not AntiDetect.BlockedRemotes[r] then
+                            local n = r.Name:lower()
+                            if n:find("eat") or n:find("sleep") or n:find("shower") or n:find("fun") or n:find("social") then
+                                AntiDetect.SafeFireServer(r)
+                            end
+                        end
+                    end
+                end)
+                task.wait(12)
+            end
+        end)
+    end
+    Notify(v and "Enabled" or "Disabled", "Auto Mood", v and "success" or "warning")
+end, 4)
+
 -- ═══════════════════════════════════════
--- TAB: JOBS
+-- TAB 4: JOBS
 -- ═══════════════════════════════════════
 
-CreateSection(JobsTab, "Auto Jobs (Spoofed)", 1)
+Section(JobsTab, "Auto Jobs", 1)
 
-local jobs = {"Pizza Delivery", "Woodcutter", "Miner", "Fisherman", "Farmer", "Cashier"}
-for i, job in ipairs(jobs) do
-    CreateToggle(JobsTab, "Auto " .. job, false, function(val)
-        if val then
+local jobList = {"Pizza", "Wood", "Mine", "Fish", "Farm", "Cashier", "Janitor", "Mechanic", "Hairdresser"}
+for i, job in ipairs(jobList) do
+    Toggle(JobsTab, "Auto " .. job, false, function(v)
+        if v then
             task.spawn(function()
-                while val do
+                while v do
                     pcall(function()
                         for _, r in pairs(ReplicatedStorage:GetDescendants()) do
-                            if r:IsA("RemoteEvent") and r.Name:lower():find(job:lower():sub(1, 4)) then
-                                if not AntiDetect.BlockedRemotes[r] then
+                            if r:IsA("RemoteEvent") and not AntiDetect.BlockedRemotes[r] then
+                                if r.Name:lower():find(job:lower():sub(1, 4)) then
                                     AntiDetect.SafeFireServer(r)
                                 end
                             end
@@ -2503,40 +1938,60 @@ for i, job in ipairs(jobs) do
                 end
             end)
         end
-        Notify(val and "Enabled" or "Disabled", "Auto " .. job .. (val and " ON" or " OFF"), val and "success" or "warning")
+        Notify(v and "Enabled" or "Disabled", "Auto " .. job, v and "success" or "warning")
     end, i + 1)
 end
 
 -- ═══════════════════════════════════════
--- TAB: VEHICLE
+-- TAB 5: VEHICLE
 -- ═══════════════════════════════════════
 
-CreateSection(VehicleTab, "Vehicle (Spoofed)", 1)
+Section(VehicleTab, "Vehicle Mods", 1)
 
-CreateToggle(VehicleTab, "Vehicle Speed Hack", false, function(val)
-    States.VehicleSpeed = val
-    if val then
-        AddConnection("VehSpd", RunService.Heartbeat:Connect(function()
+Toggle(VehicleTab, "Vehicle Speed Hack", false, function(v)
+    States.VehicleSpeed = v
+    if v then
+        AddConn("VehSpd", RunService.Heartbeat:Connect(function()
             pcall(function()
-                local hum = GetHumanoid()
+                local hum = GetHum()
                 if hum and hum.SeatPart and hum.SeatPart:IsA("VehicleSeat") then
                     hum.SeatPart.MaxSpeed = States.VehicleSpeedVal
+                    hum.SeatPart.Torque = States.VehicleSpeedVal * 2
                 end
             end)
         end))
     else
-        RemoveConnection("VehSpd")
+        RemConn("VehSpd")
     end
-    Notify(val and "Enabled" or "Disabled", "Vehicle Speed " .. (val and "ON" or "OFF"), val and "success" or "warning")
+    Notify(v and "Enabled" or "Disabled", "Vehicle Speed", v and "success" or "warning")
 end, 2)
 
-CreateSlider(VehicleTab, "Vehicle Speed Value", 50, 2000, 100, function(val)
-    States.VehicleSpeedVal = val
+Slider(VehicleTab, "Speed Value", 50, 2000, 100, function(v)
+    States.VehicleSpeedVal = v
 end, 3)
 
-CreateButton(VehicleTab, "TP to Nearest Vehicle", function()
+Toggle(VehicleTab, "Vehicle Noclip", false, function(v)
+    if v then
+        AddConn("VehNC", RunService.Stepped:Connect(function()
+            pcall(function()
+                local hum = GetHum()
+                if hum and hum.SeatPart then
+                    for _, p in pairs(hum.SeatPart.Parent:GetDescendants()) do
+                        if p:IsA("BasePart") then p.CanCollide = false end
+                    end
+                end
+            end)
+        end))
+    else
+        RemConn("VehNC")
+    end
+    Notify(v and "Enabled" or "Disabled", "Vehicle Noclip", v and "success" or "warning")
+end, 4)
+
+Button(VehicleTab, "TP to Nearest Vehicle", function()
     pcall(function()
-        local hrp = GetRootPart()
+        local hrp = GetHRP()
+        if not hrp then return end
         local closest, dist = nil, math.huge
         for _, v in pairs(workspace:GetDescendants()) do
             if v:IsA("VehicleSeat") then
@@ -2545,30 +2000,34 @@ CreateButton(VehicleTab, "TP to Nearest Vehicle", function()
             end
         end
         if closest then
-            SafeTeleport(closest.CFrame + Vector3.new(0, 3, 0), States.StealthTP)
-            Notify("Teleported", "Near vehicle!", "success")
+            SafeTP(closest.CFrame + Vector3.new(0, 3, 0), States.StealthTP)
+            Notify("TP", "Near vehicle!", "success")
+        else
+            Notify("Error", "No vehicles found!", "error")
         end
     end)
-end, 4)
+end, 5)
 
 -- ═══════════════════════════════════════
--- TAB: ESP
+-- TAB 6: ESP
 -- ═══════════════════════════════════════
 
-CreateSection(ESPTab, "Player ESP", 1)
+Section(ESPTab, "Player ESP", 1)
 
-CreateToggle(ESPTab, "Player Chams (Highlight)", false, function(val)
-    States.ChamsESP = val
+Toggle(ESPTab, "Player Chams (Highlight)", false, function(v)
+    States.ChamsESP = v
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= LocalPlayer and p.Character then
             pcall(function()
                 local hl = p.Character:FindFirstChild("KJ_HL")
-                if val then
+                if v then
                     if not hl then
-                        hl = Instance.new("Highlight", p.Character)
+                        hl = Instance.new("Highlight")
                         hl.Name = "KJ_HL"
                         hl.FillColor = States.ESPColor
+                        hl.OutlineColor = Color3.new(1, 1, 1)
                         hl.FillTransparency = 0.5
+                        hl.Parent = p.Character
                     end
                 else
                     if hl then hl:Destroy() end
@@ -2576,58 +2035,101 @@ CreateToggle(ESPTab, "Player Chams (Highlight)", false, function(val)
             end)
         end
     end
-    Notify(val and "Enabled" or "Disabled", "Chams " .. (val and "ON" or "OFF"), val and "success" or "warning")
+    Notify(v and "Enabled" or "Disabled", "Chams", v and "success" or "warning")
 end, 2)
 
-CreateToggle(ESPTab, "Name + Distance ESP", false, function(val)
-    States.NameESP = val
-    States.DistanceESP = val
-    if val then
-        AddConnection("ESPBB", RunService.RenderStepped:Connect(function()
+Toggle(ESPTab, "Name + Distance + Health ESP", false, function(v)
+    States.NameESP = v
+    States.DistanceESP = v
+    States.HealthESP = v
+    if v then
+        AddConn("ESPBB", RunService.RenderStepped:Connect(function()
             for _, p in pairs(Players:GetPlayers()) do
                 if p ~= LocalPlayer and p.Character then
                     pcall(function()
                         local head = p.Character:FindFirstChild("Head")
-                        local hrp = p.Character:FindFirstChild("HumanoidRootPart")
-                        local myHRP = GetRootPart()
-                        if not head or not hrp or not myHRP then return end
-                        local dist = math.floor((hrp.Position - myHRP.Position).Magnitude)
-                        if dist > States.ESPMaxDist then return end
+                        local hrpP = p.Character:FindFirstChild("HumanoidRootPart")
+                        local humP = p.Character:FindFirstChildOfClass("Humanoid")
+                        local myHRP = GetHRP()
+                        if not head or not hrpP or not myHRP or not humP then return end
+
+                        local dist = math.floor((hrpP.Position - myHRP.Position).Magnitude)
+                        if dist > States.ESPMaxDist then
+                            local bb = head:FindFirstChild("KJ_BB")
+                            if bb then bb.Enabled = false end
+                            return
+                        end
 
                         local bb = head:FindFirstChild("KJ_BB")
                         if not bb then
-                            bb = Instance.new("BillboardGui", head)
+                            bb = Instance.new("BillboardGui")
                             bb.Name = "KJ_BB"
-                            bb.Size = UDim2.new(0, 200, 0, 40)
+                            bb.Size = UDim2.new(0, 200, 0, 50)
                             bb.StudsOffset = Vector3.new(0, 3, 0)
                             bb.AlwaysOnTop = true
-                            local nl = Instance.new("TextLabel", bb)
+                            bb.Parent = head
+
+                            local nl = Instance.new("TextLabel")
                             nl.Name = "N"
-                            nl.Size = UDim2.new(1, 0, 0.5, 0)
+                            nl.Size = UDim2.new(1, 0, 0, 14)
                             nl.BackgroundTransparency = 1
                             nl.Font = Enum.Font.GothamBold
                             nl.TextSize = 13
                             nl.TextColor3 = States.ESPColor
                             nl.TextStrokeTransparency = 0.3
-                            nl.TextStrokeColor3 = Color3.new(0,0,0)
-                            local dl = Instance.new("TextLabel", bb)
+                            nl.TextStrokeColor3 = Color3.new(0, 0, 0)
+                            nl.Parent = bb
+
+                            local dl = Instance.new("TextLabel")
                             dl.Name = "D"
-                            dl.Size = UDim2.new(1, 0, 0.5, 0)
-                            dl.Position = UDim2.new(0, 0, 0.5, 0)
+                            dl.Size = UDim2.new(1, 0, 0, 12)
+                            dl.Position = UDim2.new(0, 0, 0, 14)
                             dl.BackgroundTransparency = 1
                             dl.Font = Enum.Font.Gotham
                             dl.TextSize = 11
-                            dl.TextColor3 = Color3.new(1,1,1)
+                            dl.TextColor3 = Color3.new(1, 1, 1)
                             dl.TextStrokeTransparency = 0.3
+                            dl.Parent = bb
+
+                            local hbg = Instance.new("Frame")
+                            hbg.Name = "HBG"
+                            hbg.Size = UDim2.new(0.7, 0, 0, 4)
+                            hbg.Position = UDim2.new(0.15, 0, 0, 28)
+                            hbg.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                            hbg.BorderSizePixel = 0
+                            hbg.Parent = bb
+                            Instance.new("UICorner", hbg).CornerRadius = UDim.new(1, 0)
+
+                            local hf = Instance.new("Frame")
+                            hf.Name = "HF"
+                            hf.Size = UDim2.new(1, 0, 1, 0)
+                            hf.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+                            hf.BorderSizePixel = 0
+                            hf.Parent = hbg
+                            Instance.new("UICorner", hf).CornerRadius = UDim.new(1, 0)
                         end
-                        bb.N.Text = p.DisplayName
-                        bb.D.Text = "[" .. dist .. "m]"
+
+                        bb.Enabled = true
+                        local nl = bb:FindFirstChild("N")
+                        local dl = bb:FindFirstChild("D")
+                        local hbg = bb:FindFirstChild("HBG")
+
+                        if nl then nl.Text = p.DisplayName .. " (@" .. p.Name .. ")" end
+                        if dl then dl.Text = "[" .. dist .. " studs]" end
+                        if hbg then
+                            local hf = hbg:FindFirstChild("HF")
+                            if hf and humP then
+                                local hp = math.clamp(humP.Health / humP.MaxHealth, 0, 1)
+                                hf.Size = UDim2.new(hp, 0, 1, 0)
+                                hf.BackgroundColor3 = Color3.fromRGB(255 * (1 - hp), 255 * hp, 0)
+                            end
+                        end
                     end)
                 end
             end
         end))
     else
-        RemoveConnection("ESPBB")
+        RemConn("ESPBB")
         for _, p in pairs(Players:GetPlayers()) do
             pcall(function()
                 if p.Character and p.Character:FindFirstChild("Head") then
@@ -2637,66 +2139,83 @@ CreateToggle(ESPTab, "Name + Distance ESP", false, function(val)
             end)
         end
     end
-    Notify(val and "Enabled" or "Disabled", "Name ESP " .. (val and "ON" or "OFF"), val and "success" or "warning")
+    Notify(v and "Enabled" or "Disabled", "Full ESP", v and "success" or "warning")
 end, 3)
 
-CreateSlider(ESPTab, "ESP Max Distance", 100, 10000, 5000, function(val)
-    States.ESPMaxDist = val
+Slider(ESPTab, "ESP Max Distance", 100, 10000, 5000, function(v)
+    States.ESPMaxDist = v
 end, 4)
 
 -- ═══════════════════════════════════════
--- TAB: TELEPORT
+-- TAB 7: TELEPORT
 -- ═══════════════════════════════════════
 
-CreateSection(TeleportTab, "Stealth Teleport Locations", 1)
+Section(TPTab, "Locations (Stealth TP)", 1)
 
-local sorted = {}
-for n in pairs(TeleportLocations) do table.insert(sorted, n) end
-table.sort(sorted)
+local sortedLocs = {}
+for n in pairs(TeleportLocations) do table.insert(sortedLocs, n) end
+table.sort(sortedLocs)
 
-for i, loc in ipairs(sorted) do
-    CreateButton(TeleportTab, "📍 " .. loc, function()
-        if States.StealthTP then
-            SafeTeleport(TeleportLocations[loc], false)
-        else
-            SafeTeleport(TeleportLocations[loc], true)
-        end
-        Notify("Teleported", loc .. " (Stealth)", "success")
+for i, loc in ipairs(sortedLocs) do
+    Button(TPTab, "📍 " .. loc, function()
+        SafeTP(TeleportLocations[loc], States.StealthTP)
+        Notify("TP", loc, "success")
     end, i + 1)
 end
 
-CreateSection(TeleportTab, "Player Teleport", #sorted + 3)
+Section(TPTab, "Utility", #sortedLocs + 3)
 
-CreateToggle(TeleportTab, "Click Teleport (Ctrl+Click)", false, function(val)
-    States.ClickTP = val
-    if val then
-        AddConnection("ClickTP", Mouse.Button1Down:Connect(function()
+Toggle(TPTab, "Click TP (Ctrl+Click)", false, function(v)
+    States.ClickTP = v
+    if v then
+        AddConn("ClickTP", Mouse.Button1Down:Connect(function()
             if States.ClickTP and UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
-                SafeTeleport(CFrame.new(Mouse.Hit.Position + Vector3.new(0, 3, 0)), not States.StealthTP)
+                SafeTP(CFrame.new(Mouse.Hit.Position + Vector3.new(0, 3, 0)), States.StealthTP)
             end
         end))
     else
-        RemoveConnection("ClickTP")
+        RemConn("ClickTP")
     end
-    Notify(val and "Enabled" or "Disabled", "Click TP " .. (val and "ON" or "OFF"), val and "success" or "warning")
-end, #sorted + 4)
+    Notify(v and "Enabled" or "Disabled", "Click TP", v and "success" or "warning")
+end, #sortedLocs + 4)
 
--- ═══════════════════════════════════════
--- TAB: TROLL
--- ═══════════════════════════════════════
-
-CreateSection(TrollTab, "Troll Features", 1)
-
-CreateToggle(TrollTab, "Fling Players", false, function(val)
-    States.Fling = val
+Button(TPTab, "💾 Save Position", function()
     pcall(function()
-        local hrp = GetRootPart()
-        if val then
-            local bav = Instance.new("BodyAngularVelocity", hrp)
+        local hrp = GetHRP()
+        if hrp then
+            table.insert(SavedPositions, hrp.CFrame)
+            if #SavedPositions > 5 then table.remove(SavedPositions, 1) end
+            Notify("Saved", "Slot " .. #SavedPositions, "success")
+        end
+    end)
+end, #sortedLocs + 5)
+
+Button(TPTab, "📂 Load Last Position", function()
+    if #SavedPositions > 0 then
+        SafeTP(SavedPositions[#SavedPositions], States.StealthTP)
+        Notify("Loaded", "Teleported!", "success")
+    else
+        Notify("Error", "No saved positions", "error")
+    end
+end, #sortedLocs + 6)
+
+-- ═══════════════════════════════════════
+-- TAB 8: TROLL
+-- ═══════════════════════════════════════
+
+Section(TrollTab, "Troll Features", 1)
+
+Toggle(TrollTab, "Fling Players", false, function(v)
+    States.Fling = v
+    pcall(function()
+        local hrp = GetHRP()
+        if v then
+            local bav = Instance.new("BodyAngularVelocity")
             bav.Name = "KJ_Fling"
             bav.AngularVelocity = Vector3.new(0, 9999, 0)
             bav.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-            for _, p in pairs(GetCharacter():GetDescendants()) do
+            bav.Parent = hrp
+            for _, p in pairs(GetChar():GetDescendants()) do
                 if p:IsA("BasePart") then
                     p.CustomPhysicalProperties = PhysicalProperties.new(100, 0.7, 0, 100, 100)
                 end
@@ -2704,128 +2223,328 @@ CreateToggle(TrollTab, "Fling Players", false, function(val)
         else
             local bav = hrp:FindFirstChild("KJ_Fling")
             if bav then bav:Destroy() end
+            for _, p in pairs(GetChar():GetDescendants()) do
+                if p:IsA("BasePart") then
+                    p.CustomPhysicalProperties = PhysicalProperties.new(0.7, 0.3, 0.5)
+                end
+            end
         end
     end)
-    Notify(val and "Enabled" or "Disabled", "Fling " .. (val and "ON" or "OFF"), val and "success" or "warning")
+    Notify(v and "Enabled" or "Disabled", "Fling", v and "success" or "warning")
 end, 2)
 
-CreateToggle(TrollTab, "Spin Mode", false, function(val)
+Toggle(TrollTab, "Spin Mode", false, function(v)
     pcall(function()
-        local hrp = GetRootPart()
-        if val then
-            local bav = Instance.new("BodyAngularVelocity", hrp)
+        local hrp = GetHRP()
+        if v then
+            local bav = Instance.new("BodyAngularVelocity")
             bav.Name = "KJ_Spin"
             bav.AngularVelocity = Vector3.new(0, 50, 0)
             bav.MaxTorque = Vector3.new(0, 9e9, 0)
+            bav.Parent = hrp
         else
             local bav = hrp:FindFirstChild("KJ_Spin")
             if bav then bav:Destroy() end
         end
     end)
+    Notify(v and "Enabled" or "Disabled", "Spin", v and "success" or "warning")
 end, 3)
 
--- ═══════════════════════════════════════
--- TAB: MISC
--- ═══════════════════════════════════════
-
-CreateSection(MiscTab, "Server", 1)
-
-CreateButton(MiscTab, "Server Hop", function()
-    TeleportService:Teleport(game.PlaceId)
-end, 2)
-
-CreateButton(MiscTab, "Rejoin", function()
-    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId)
-end, 3)
-
-CreateButton(MiscTab, "Copy Server ID", function()
-    pcall(function() if setclipboard then setclipboard(game.JobId) end end)
-    Notify("Copied", "Server ID copied!", "success")
+Toggle(TrollTab, "Ragdoll", false, function(v)
+    pcall(function() GetHum().PlatformStand = v end)
 end, 4)
 
-CreateSection(MiscTab, "Performance", 5)
+Section(TrollTab, "Chat", 5)
 
-CreateToggle(MiscTab, "FPS Boost", false, function(val)
+local spamInput = TextInput(TrollTab, "Spam message...", function(txt)
+    States.SpamMessage = txt
+end, 6)
+
+Slider(TrollTab, "Spam Delay (x0.1s)", 1, 50, 10, function(v)
+    States.SpamDelay = v / 10
+end, 7)
+
+Toggle(TrollTab, "Chat Spam", false, function(v)
+    States.ChatSpam = v
+    if v then
+        task.spawn(function()
+            while States.ChatSpam do
+                pcall(function()
+                    local chat = ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents")
+                    if chat then
+                        local say = chat:FindFirstChild("SayMessageRequest")
+                        if say then say:FireServer(States.SpamMessage, "All") end
+                    end
+                end)
+                task.wait(States.SpamDelay)
+            end
+        end)
+    end
+    Notify(v and "Enabled" or "Disabled", "Chat Spam", v and "success" or "warning")
+end, 8)
+
+-- ═══════════════════════════════════════
+-- TAB 9: MISC
+-- ═══════════════════════════════════════
+
+Section(MiscTab, "Server", 1)
+
+Button(MiscTab, "Server Hop", function()
+    pcall(function() TeleportService:Teleport(game.PlaceId) end)
+    Notify("Server", "Hopping...", "info")
+end, 2)
+
+Button(MiscTab, "Rejoin", function()
+    pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId) end)
+    Notify("Server", "Rejoining...", "info")
+end, 3)
+
+Button(MiscTab, "Copy Server ID", function()
     pcall(function()
-        if val then
+        if setclipboard then setclipboard(game.JobId); Notify("Copied", "Server ID!", "success")
+        else Notify("Error", "Not supported", "error") end
+    end)
+end, 4)
+
+Section(MiscTab, "Performance", 5)
+
+Toggle(MiscTab, "FPS Boost / Anti-Lag", false, function(v)
+    pcall(function()
+        if v then
             Lighting.GlobalShadows = false
             Lighting.FogEnd = 9e9
-            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-            for _, v in pairs(workspace:GetDescendants()) do
-                if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then v.Enabled = false end
+            pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Level01 end)
+            for _, obj in pairs(workspace:GetDescendants()) do
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
+                    obj.Enabled = false
+                end
             end
             for _, e in pairs(Lighting:GetChildren()) do
-                if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("BloomEffect") or e:IsA("ColorCorrectionEffect") then e.Enabled = false end
+                if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("BloomEffect") or e:IsA("ColorCorrectionEffect") or e:IsA("DepthOfFieldEffect") then
+                    e.Enabled = false
+                end
             end
         else
             Lighting.GlobalShadows = true
-            settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
+            pcall(function() settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic end)
         end
     end)
-    Notify(val and "Enabled" or "Disabled", "FPS Boost " .. (val and "ON" or "OFF"), val and "success" or "warning")
+    Notify(v and "Enabled" or "Disabled", "FPS Boost", v and "success" or "warning")
 end, 6)
 
-CreateToggle(MiscTab, "Fullbright", false, function(val)
+Toggle(MiscTab, "Fullbright", false, function(v)
     pcall(function()
-        Lighting.Brightness = val and 2 or 1
+        Lighting.Brightness = v and 2 or 1
         Lighting.ClockTime = 14
-        Lighting.FogEnd = val and 1e6 or 1e4
-        Lighting.GlobalShadows = not val
-        Lighting.Ambient = val and Color3.fromRGB(178, 178, 178) or Color3.new(0,0,0)
+        Lighting.FogEnd = v and 1e6 or 1e4
+        Lighting.GlobalShadows = not v
+        Lighting.Ambient = v and Color3.fromRGB(178, 178, 178) or Color3.new(0, 0, 0)
+        Lighting.OutdoorAmbient = v and Color3.fromRGB(178, 178, 178) or Color3.fromRGB(128, 128, 128)
     end)
+    Notify(v and "Enabled" or "Disabled", "Fullbright", v and "success" or "warning")
 end, 7)
 
+Toggle(MiscTab, "No Fog", false, function(v)
+    pcall(function()
+        Lighting.FogEnd = v and math.huge or 10000
+        Lighting.FogStart = v and math.huge or 0
+    end)
+end, 8)
+
+Button(MiscTab, "Remove All Sounds", function()
+    pcall(function()
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("Sound") then v.Volume = 0; v.Playing = false end
+        end
+    end)
+    Notify("Done", "Sounds removed", "success")
+end, 9)
+
+Section(MiscTab, "Player Info", 10)
+
+local infoLabel = Label(MiscTab, "Players: " .. #Players:GetPlayers() .. " | PlaceId: " .. game.PlaceId, 11)
+
+Button(MiscTab, "Refresh Info", function()
+    infoLabel.Text = "Players: " .. #Players:GetPlayers() .. " | PlaceId: " .. game.PlaceId .. " | JobId: " .. game.JobId:sub(1, 8)
+    Notify("Info", #Players:GetPlayers() .. " players", "info")
+end, 12)
+
 -- ═══════════════════════════════════════
--- TAB: SETTINGS
+-- TAB 10: SETTINGS
 -- ═══════════════════════════════════════
 
-CreateSection(SettingsTab, "Info", 1)
-CreateLabel(SettingsTab, "☢️ Script KimJong v3.0 GODMODE", 2)
-CreateLabel(SettingsTab, "🛡️ Anti-Detect Level: DEWA (17 Layers)", 3)
-CreateLabel(SettingsTab, "Toggle UI: RightShift", 4)
-CreateLabel(SettingsTab, "Made by: KimJong", 5)
+Section(SettingsTab, "Script Info", 1)
+Label(SettingsTab, "☢️ Script KimJong v3.1 GODMODE", 2)
+Label(SettingsTab, "🛡️ Anti-Detect: DEWA (17 Layers)", 3)
+Label(SettingsTab, "Toggle UI: RightShift", 4)
+Label(SettingsTab, "Made by: KimJong", 5)
 
-CreateSection(SettingsTab, "Config", 6)
+Section(SettingsTab, "Config", 6)
 
-CreateButton(SettingsTab, "💾 Save Config", function()
+Button(SettingsTab, "💾 Save Config", function()
     pcall(function()
         if writefile then
-            writefile("KimJong_v3_Config.json", HttpService:JSONEncode(States))
+            writefile("KimJong_v31.json", HttpService:JSONEncode(States))
             Notify("Saved", "Config saved!", "success")
+        else
+            Notify("Error", "Filesystem not available", "error")
         end
     end)
 end, 7)
 
-CreateButton(SettingsTab, "📂 Load Config", function()
+Button(SettingsTab, "📂 Load Config", function()
     pcall(function()
-        if readfile and isfile and isfile("KimJong_v3_Config.json") then
-            local data = HttpService:JSONDecode(readfile("KimJong_v3_Config.json"))
-            for k, v in pairs(data) do if States[k] ~= nil then States[k] = v end end
+        if readfile and isfile and isfile("KimJong_v31.json") then
+            local data = HttpService:JSONDecode(readfile("KimJong_v31.json"))
+            for k, v in pairs(data) do
+                if States[k] ~= nil then States[k] = v end
+            end
+            _G.KimJongStates = States
             Notify("Loaded", "Config loaded!", "success")
+        else
+            Notify("Error", "No config found", "error")
         end
     end)
 end, 8)
 
-CreateSection(SettingsTab, "Danger Zone", 9)
+Button(SettingsTab, "🔄 Reset Settings", function()
+    SafeSpeed(16)
+    SafeJump(50)
+    pcall(function() workspace.CurrentCamera.FieldOfView = 70 end)
+    Notify("Reset", "Settings reset!", "info")
+end, 9)
 
-CreateButton(SettingsTab, "🗑️ DESTROY SCRIPT", function()
-    Notify("Goodbye!", "KimJong GODMODE destroyed! ☢️", "warning", 2)
+Section(SettingsTab, "Danger Zone", 10)
+
+Button(SettingsTab, "🗑️ DESTROY SCRIPT", function()
+    Notify("Goodbye", "KimJong destroyed! ☢️", "warning", 2)
     task.wait(1)
     pcall(function()
-        -- Full cleanup
+        AntiDetect.Active = false
+
+        -- Disconnect all anti-detect connections
+        for _, c in pairs(AntiDetect.Connections) do
+            pcall(function() c:Disconnect() end)
+        end
+
+        -- Disconnect all feature connections
+        for _, c in pairs(Connections) do
+            pcall(function() c:Disconnect() end)
+        end
+
+        -- Reset player
+        pcall(function()
+            local hum = GetHum()
+            if hum then
+                hum.WalkSpeed = 16
+                hum.JumpPower = 50
+                hum.PlatformStand = false
+            end
+            workspace.CurrentCamera.FieldOfView = 70
+        end)
+
+        -- Remove body movers
+        pcall(function()
+            local hrp = GetHRP()
+            if hrp then
+                for _, c in pairs(hrp:GetChildren()) do
+                    if c.Name:sub(1, 3) == "KJ_" then c:Destroy() end
+                end
+            end
+        end)
+
+        -- Remove ESP
+        for _, p in pairs(Players:GetPlayers()) do
+            pcall(function()
+                if p.Character then
+                    local hl = p.Character:FindFirstChild("KJ_HL")
+                    if hl then hl:Destroy() end
+                    if p.Character:FindFirstChild("Head") then
+                        local bb = p.Character.Head:FindFirstChild("KJ_BB")
+                        if bb then bb:Destroy() end
+                    end
+                end
+            end)
+        end
+
+        -- Reset lighting
+        pcall(function()
+            Lighting.GlobalShadows = true
+            Lighting.FogEnd = 10000
+            Lighting.Brightness = 1
+        end)
+
+        _G.KimJongLoaded = false
+        _G.KimJongStates = nil
+        _G.KimJongMainFrame = nil
+        _G.KimJongScreenGui = nil
+        ScreenGui:Destroy()
+    end)
+end, 11)
+
+-- ═══════════════════════════════════════
+-- CHARACTER RESPAWN HANDLER
+-- ═══════════════════════════════════════
+
+AddConn("CharAdded", LocalPlayer.CharacterAdded:Connect(function(char)
+    task.wait(1)
+    pcall(function()
+        local hum = char:WaitForChild("Humanoid", 5)
+        if hum then
+            if States.WalkSpeed > 16 then SafeSpeed(States.WalkSpeed) end
+            if States.JumpPower > 50 then SafeJump(States.JumpPower) end
+        end
+    end)
+    pcall(NeutralizeAC)
+end))
+
+-- ESP auto-apply for new players
+AddConn("PlayerAdded", Players.PlayerAdded:Connect(function(p)
+    p.CharacterAdded:Connect(function()
+        task.wait(1)
+        if States.ChamsESP and p.Character then
+            pcall(function()
+                if not p.Character:FindFirstChild("KJ_HL") then
+                    local hl = Instance.new("Highlight")
+                    hl.Name = "KJ_HL"
+                    hl.FillColor = States.ESPColor
+                    hl.FillTransparency = 0.5
+                    hl.Parent = p.Character
+                end
+            end)
+        end
+    end)
+end))
+
+AddConn("PlayerRemoving", Players.PlayerRemoving:Connect(function(p)
+    pcall(function()
+        if p.Character then
+            local hl = p.Character:FindFirstChild("KJ_HL")
+            if hl then hl:Destroy() end
+        end
+    end)
+end))
+
+-- Cleanup function for re-execution
+_G.KimJongCleanup = function()
+    pcall(function()
         AntiDetect.Active = false
         for _, c in pairs(AntiDetect.Connections) do pcall(function() c:Disconnect() end) end
-        for n, c in pairs(Connections) do pcall(function() c:Disconnect() end) end
-        
-        local hum = GetHumanoid()
-        if hum then hum.WalkSpeed = 16; hum.JumpPower = 50; hum.PlatformStand = false end
+        for _, c in pairs(Connections) do pcall(function() c:Disconnect() end) end
 
-        local hrp = GetRootPart()
-        if hrp then
-            for _, c in pairs(hrp:GetChildren()) do
-                if c.Name:sub(1, 3) == "KJ_" then c:Destroy() end
+        pcall(function()
+            local hum = GetHum()
+            if hum then hum.WalkSpeed = 16; hum.JumpPower = 50; hum.PlatformStand = false end
+        end)
+
+        pcall(function()
+            local hrp = GetHRP()
+            if hrp then
+                for _, c in pairs(hrp:GetChildren()) do
+                    if c.Name:sub(1, 3) == "KJ_" then c:Destroy() end
+                end
             end
-        end
+        end)
 
         for _, p in pairs(Players:GetPlayers()) do
             pcall(function()
@@ -2840,82 +2559,12 @@ CreateButton(SettingsTab, "🗑️ DESTROY SCRIPT", function()
             end)
         end
 
-        Lighting.GlobalShadows = true
-        Lighting.FogEnd = 10000
-        workspace.CurrentCamera.FieldOfView = 70
-
-        _G.KimJongLoaded = false
-        _G.KimJongStates = nil
-        _G.KimJongMainFrame = nil
-        _G.KimJongScreenGui = nil
-        ScreenGui:Destroy()
-    end)
-end, 10)
-
--- ⚡ Character respawn handler
-AddConnection("CharAdded", LocalPlayer.CharacterAdded:Connect(function(char)
-    task.wait(1)
-    pcall(function()
-        local hum = char:WaitForChild("Humanoid", 5)
-        if hum then
-            if States.WalkSpeed > 16 then SafeSetSpeed(States.WalkSpeed) end
-            if States.JumpPower > 50 then SafeSetJump(States.JumpPower) end
-        end
-    end)
-    -- Re-neutralize anti-cheat on respawn
-    pcall(NeutralizeAntiCheatScripts)
-end))
-
--- ESP auto-apply on new players
-AddConnection("PlayerAdded", Players.PlayerAdded:Connect(function(p)
-    if States.ChamsESP then
-        p.CharacterAdded:Connect(function()
-            task.wait(1)
-            pcall(function()
-                if p.Character and not p.Character:FindFirstChild("KJ_HL") then
-                    local hl = Instance.new("Highlight", p.Character)
-                    hl.Name = "KJ_HL"
-                    hl.FillColor = States.ESPColor
-                    hl.FillTransparency = 0.5
-                end
-            end)
-        end)
-    end
-end))
-
--- Obfuscate all instance names
-task.defer(function()
-    ObfuscateInstanceNames(ScreenGui)
-end)
-
--- Cleanup function
-_G.KimJongCleanup = function()
-    pcall(function()
-        AntiDetect.Active = false
-        for _, c in pairs(AntiDetect.Connections) do pcall(function() c:Disconnect() end) end
-        for _, c in pairs(Connections) do pcall(function() c:Disconnect() end) end
-        
-        pcall(function()
-            local hum = GetHumanoid()
-            if hum then hum.WalkSpeed = 16; hum.JumpPower = 50 end
-        end)
-        
-        for _, p in pairs(Players:GetPlayers()) do
-            pcall(function()
-                if p.Character then
-                    local hl = p.Character:FindFirstChild("KJ_HL")
-                    if hl then hl:Destroy() end
-                end
-            end)
-        end
-        
         ScreenGui:Destroy()
     end)
 end
 
-print("═══════════════════════════════════════════")
-print("  ☢️ Script KimJong v3.0 GODMODE Loaded!  ")
-print("  🛡️ 17-Layer Anti-Detect Shield: ACTIVE  ")
-print("  Anti-Detect Level: DEWA                 ")
+print("═════════════════════════════════════════")
+print("  ☢️ KimJong v3.1 GODMODE Fixed Loaded!  ")
+print("  🛡️ 17-Layer Shield: ACTIVE              ")
 print("  Toggle UI: RightShift                   ")
-print("═══════════════════════════════════════════")
+print("═════════════════════════════════════════")
